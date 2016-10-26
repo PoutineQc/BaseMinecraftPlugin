@@ -5,37 +5,40 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.poutineqc.base.Plugin;
 
-public class YAMLConfigFile {
-	File folder;
-	File file;
-	FileConfiguration config;
+public class PluginYAMLFile extends YamlConfiguration {
 
-	public YAMLConfigFile(String fileName, boolean buildIn, String... folders) {
-		getFile(fileName, buildIn, folders);
+	private File file;
+
+	public PluginYAMLFile(String fileName, boolean buildIn, String... folders) {
+		file = getFile(fileName, buildIn, folders);
 		if (!file.exists())
 			return;
 
-		this.config = YamlConfiguration.loadConfiguration(file);
+		try {
+			load(file);
+		} catch (IOException | InvalidConfigurationException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public void getFile(String fileName, boolean buildIn, String... folders) {
+	private static File getFile(String fileName, boolean buildIn, String... folders) {
 		Plugin plugin = Plugin.get();
 		String completeFileName = fileName + ".yml";
-		folder = getFolder(plugin, folders);
-		file = new File(folder, completeFileName);
+		File folder = getFolder(plugin, folders);
+		File file = new File(folder, completeFileName);
 
 		if (file.exists())
-			return;
+			return file;
 
 		if (buildIn) {
-			InputStream local = plugin.getResource(getFolderPath(folders) + fileName + ".yml");
+			InputStream local = plugin.getResource(getFolderPath(folders) + completeFileName);
 			if (local != null) {
-				plugin.saveResource(folders + completeFileName, false);
+				plugin.saveResource(getFolderPath(folders) + completeFileName, false);
 			} else {
 				plugin.getLogger().severe("Could not find " + completeFileName);
 				plugin.getLogger().severe("Contact the developper as fast as possible as this should not happend.");
@@ -45,20 +48,22 @@ public class YAMLConfigFile {
 		} else {
 			try {
 				file.createNewFile();
-				return;
+				return null;
 			} catch (IOException e) {
-				Bukkit.getServer().getLogger().severe("Could not create " + fileName + ".ylm.");
+				Bukkit.getServer().getLogger().severe("Could not create " + completeFileName);
 				Bukkit.getServer().getLogger().severe("Review your minecraft server's permissions"
 						+ " to write and edit files in it's plugin directory");
 				Bukkit.getServer().getLogger().severe("Disabling " + plugin.getName() + "...");
 				plugin.getPluginLoader().disablePlugin(plugin);
 			}
 		}
+
+		return file;
 	}
 
-	private File getFolder(Plugin plugin, String... folders) {
+	private static File getFolder(Plugin plugin, String... folders) {
 
-		File folder = plugin.getDataFolder();
+		File folder = new File(".");
 		for (String folderName : folders) {
 			folder = new File(folder, folderName);
 			if (!folder.exists())
@@ -68,7 +73,7 @@ public class YAMLConfigFile {
 		return folder;
 	}
 
-	private String getFolderPath(String... folders) {
+	private static String getFolderPath(String... folders) {
 
 		StringBuilder path = new StringBuilder();
 		for (String folderName : folders) {
@@ -81,18 +86,10 @@ public class YAMLConfigFile {
 
 	public void save() {
 		try {
-			config.save(file);
+			save(file);
 		} catch (IOException e) {
-			Bukkit.getServer().getLogger()
-					.severe("Could not save " + ((file == null) ? "the file." : file.getName() + ".yml."));
+			e.printStackTrace();
 		}
 	}
 
-	public File getFile() {
-		return file;
-	}
-
-	public FileConfiguration get() {
-		return config;
-	}
 }
