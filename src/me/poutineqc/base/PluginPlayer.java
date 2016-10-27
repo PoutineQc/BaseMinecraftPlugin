@@ -3,7 +3,7 @@ package me.poutineqc.base;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-public class PPlayer {
+public class PluginPlayer {
 
 	OfflinePlayer player;
 	

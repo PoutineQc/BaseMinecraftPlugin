@@ -67,7 +67,7 @@ public class Language {
 		return defaultLanguage;
 	}
 
-	public void sendMessage(PPlayer player, Messages message) {
+	public void sendMessage(PluginPlayer player, Messages message) {
 		try {
 			if (Plugin.get().getConf().getBoolean(ConfigOptions.PREFIX))
 				player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',
