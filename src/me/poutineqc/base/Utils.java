@@ -1,4 +1,4 @@
-package me.poutineqc.base.utils;
+package me.poutineqc.base;
 
 import java.util.ArrayList;
 import java.util.List;

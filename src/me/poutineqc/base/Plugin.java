@@ -6,6 +6,8 @@ public class Plugin extends JavaPlugin {
 
 	private static Plugin plugin;
 	
+	private PluginConfig config;
+	
 	@Override
 	public void onEnable() {
 		Plugin.plugin = this;
@@ -18,6 +20,10 @@ public class Plugin extends JavaPlugin {
 	
 	public static Plugin get() {
 		return plugin;
+	}
+	
+	public PluginConfig getConf() {
+		return config;
 	}
 	
 }

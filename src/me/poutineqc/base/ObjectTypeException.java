@@ -1,4 +1,4 @@
-package me.poutineqc.base.utils;
+package me.poutineqc.base;
 
 public class ObjectTypeException extends Exception {
 

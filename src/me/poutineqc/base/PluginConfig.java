@@ -2,8 +2,6 @@ package me.poutineqc.base;
 
 import java.util.List;
 
-import me.poutineqc.base.utils.PluginYAMLFile;
-
 public class PluginConfig {
 
 	public static final String FILE_NAME = "config";
@@ -14,71 +12,65 @@ public class PluginConfig {
 		yamlFile = new PluginYAMLFile(FILE_NAME, true);
 	}
 	
+	public boolean isString(ConfigOptions option) {
+		return option.defaultValue instanceof String;
+	}
+	
+	public String getString(ConfigOptions option) throws ObjectTypeException {
+		if (option.defaultValue instanceof String)
+			throw new ObjectTypeException(option.key + " is not a String");
+		return yamlFile.getString(option.key, (String) option.defaultValue);
+	}
+	
+	public String getString(ConfigOptions option, String defaultValue) {
+		return yamlFile.getString(option.key, defaultValue);
+	}
+	
 	public boolean isInt(ConfigOptions option) {
 		return option.defaultValue instanceof Integer;
 	}
 	
-	public int getInt(ConfigOptions option) {
+	public int getInt(ConfigOptions option) throws ObjectTypeException {
 		if (option.defaultValue instanceof Integer)
-			throw new NumberFormatException("Option is not a Int");
+			throw new ObjectTypeException(option.key + " is not a Int");
 		return yamlFile.getInt(option.key, (Integer) option.defaultValue);
-	}
-	
-	public int getInt(ConfigOptions option, int defaultValue) {
-		return yamlFile.getInt(option.key, defaultValue);
 	}
 	
 	public boolean isLong(ConfigOptions option) {
 		return option.defaultValue instanceof Long;
 	}
 	
-	public long getLong(ConfigOptions option) {
+	public long getLong(ConfigOptions option) throws ObjectTypeException {
 		if (option.defaultValue instanceof Long)
-			throw new NumberFormatException("Option is not a Long");
+			throw new ObjectTypeException(option.key + " is not a Long");
 		return yamlFile.getLong(option.key, (Long) option.defaultValue);
-	}
-	
-	public long getLong(ConfigOptions option, long defaultValue) {
-		return yamlFile.getLong(option.key, defaultValue);
 	}
 	
 	public boolean isDouble(ConfigOptions option) {
 		return option.defaultValue instanceof Double;
 	}
 	
-	public double getDouble(ConfigOptions option) {
+	public double getDouble(ConfigOptions option) throws ObjectTypeException {
 		if (option.defaultValue instanceof Double)
-			throw new NumberFormatException("Option is not a Double");
+			throw new ObjectTypeException(option.key + " is not a Double");
 		return yamlFile.getDouble(option.key, (Double) option.defaultValue);
-	}
-	
-	public double getDouble(ConfigOptions option, double defaultValue) {
-		return yamlFile.getDouble(option.key, defaultValue);
 	}
 	
 	public boolean isBoolean(ConfigOptions option) {
 		return option.defaultValue instanceof Boolean;
 	}
 	
-	public boolean getBoolean(ConfigOptions option) {
+	public boolean getBoolean(ConfigOptions option) throws ObjectTypeException {
 		if (option.defaultValue instanceof Boolean)
-			throw new NumberFormatException("Option is not a Boolean");
+			throw new ObjectTypeException(option.key + " is not a Boolean");
 		return yamlFile.getBoolean(option.key, (Boolean) option.defaultValue);
-	}
-	
-	public boolean getBoolean(ConfigOptions option, boolean defaultValue) {
-		return yamlFile.getBoolean(option.key, defaultValue);
 	}
 	
 	public List<?> getList(ConfigOptions option) {
 		return yamlFile.getList(option.key);
 	}
-	
-	public List<?> getList(ConfigOptions option, List<?> defaultValue) {
-		return yamlFile.getList(option.key, defaultValue);
-	}
 
-	private enum ConfigOptions {
+	public enum ConfigOptions {
 
 		LANGUAGE("language", "en"), PREFIX("prefixInFrontOfMessages", true);
 
