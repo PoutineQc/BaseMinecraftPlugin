@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 import org.bukkit.ChatColor;
 
-import me.poutineqc.base.PluginConfig.ConfigOptions;
 import me.poutineqc.data.PluginYAMLFile;
 
 public class Language {
@@ -56,30 +55,15 @@ public class Language {
 	}
 
 	public static String getDefaultName() {
-		String defaultLanguage;
-
-		try {
-			defaultLanguage = Plugin.get().getConf().getString(ConfigOptions.LANGUAGE);
-		} catch (ObjectTypeException e) {
-			e.printStackTrace();
-			defaultLanguage = "en";
-		}
-
-		return defaultLanguage;
+		return Plugin.get().getConfig().getString("language", "en");
 	}
 	
 	public void sendMessage(PluginPlayer player, Messages message) {
-		try {
-			if (Plugin.get().getConf().getBoolean(ConfigOptions.PREFIX))
+			if (Plugin.get().getConfig().getBoolean("prefix", true))
 				player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',
 						getMessage(Messages.PREFIX) + " " + getMessage(message)));
 			else
 				player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', getMessage(message)));
-
-		} catch (ObjectTypeException e) {
-			e.printStackTrace();
-			player.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', getMessage(message)));
-		}
 	}
 
 	public Language(String fileName, boolean builtIn) {
@@ -90,9 +74,9 @@ public class Language {
 		return yamlFile.getString(message.key, message.defaultValue);
 	}
 
-	private enum Messages {
+	public enum Messages {
 
-		LANGUAGE_NAME("languageName", "english"), PREFIX("prefix", "[pl]");
+		LANGUAGE_NAME("languageName", "english"), PREFIX("prefix", "[pl]"), NOBODY("keyWordNoOne", "no one yet");
 
 		private String key;
 		private String defaultValue;

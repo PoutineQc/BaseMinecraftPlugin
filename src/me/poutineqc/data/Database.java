@@ -18,7 +18,7 @@ public abstract class Database extends DataStorage {
 	public Database(Plugin plugin, String table) {
 		super(plugin);
 		dbname = plugin.getConfig().getString("database", "minecraft");
-		this.table = table;
+		this.table = plugin.getConfig().getString("tablePrefix").toUpperCase() + "_" + table.toUpperCase();
 	}
 
 	public abstract Connection getSQLConnection();

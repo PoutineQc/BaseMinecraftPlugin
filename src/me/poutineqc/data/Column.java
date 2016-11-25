@@ -12,6 +12,10 @@ public class Column {
 		this.defaultValue = defaultValue;
 	}
 	
+	public Column(String name, ValueType type) {
+		this(name, type, null);
+	}
+
 	public String getQuerryPart() {
 		StringBuilder builder = new StringBuilder();
 		
