@@ -25,5 +25,4 @@ public class Plugin extends JavaPlugin {
 	public PluginConfig getConf() {
 		return config;
 	}
-	
 }

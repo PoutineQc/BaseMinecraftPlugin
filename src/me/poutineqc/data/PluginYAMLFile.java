@@ -1,4 +1,4 @@
-package me.poutineqc.base;
+package me.poutineqc.data;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +7,8 @@ import java.io.InputStream;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import me.poutineqc.base.Plugin;
 
 public class PluginYAMLFile extends YamlConfiguration {
 

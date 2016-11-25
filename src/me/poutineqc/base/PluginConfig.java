@@ -2,6 +2,8 @@ package me.poutineqc.base;
 
 import java.util.List;
 
+import me.poutineqc.data.PluginYAMLFile;
+
 public class PluginConfig {
 
 	public static final String FILE_NAME = "config";

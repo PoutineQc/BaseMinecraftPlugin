@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.bukkit.ChatColor;
 
 import me.poutineqc.base.PluginConfig.ConfigOptions;
+import me.poutineqc.data.PluginYAMLFile;
 
 public class Language {
 
@@ -66,7 +67,7 @@ public class Language {
 
 		return defaultLanguage;
 	}
-
+	
 	public void sendMessage(PluginPlayer player, Messages message) {
 		try {
 			if (Plugin.get().getConf().getBoolean(ConfigOptions.PREFIX))
