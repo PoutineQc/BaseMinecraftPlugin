@@ -1,83 +1,91 @@
 package me.poutineqc.data;
 
 import java.util.List;
+import java.util.UUID;
 
-import me.poutineqc.base.Plugin;
+import me.poutineqc.instantiable.SavableParameter;
+import me.poutineqc.plugin.PoutinePlugin;
 
-public class FlatFile extends DataStorage {
+public class FlatFile implements DataStorage {
 	
 	private PluginYAMLFile file;
 
-	public FlatFile(Plugin plugin, String fileName, boolean builtIn, String... folders) {
-		super(plugin);
+	public FlatFile(PoutinePlugin plugin, String fileName, boolean builtIn, String... folders) {
 		file = new PluginYAMLFile(fileName, builtIn, folders);
 	}
 
 	@Override
-	public String getString(String capsule, String key) {
-		return file.getString(capsule + "." + key);
+	public String getString(UUID identification, SavableParameter parameter) {
+		return file.getString(identification.toString() + "." + parameter.getKey());
 	}
 
 	@Override
-	public void setString(String capsule, String key, String value) {
-		file.set(capsule + "." + key, value);
+	public void setString(UUID identification, SavableParameter parameter, String value) {
+		file.set(identification.toString() + "." + parameter.getKey(), value);
+		file.save();
 	}
 
 	@Override
-	public int getInt(String capsule, String key) {
-		return file.getInt(capsule + "." + key);
+	public int getInt(UUID identification, SavableParameter parameter) {
+		return file.getInt(identification.toString() + "." + parameter.getKey());
 	}
 
 	@Override
-	public void setInt(String capsule, String key, int value) {
-		file.set(capsule + "." + key, value);
+	public void setInt(UUID identification, SavableParameter parameter, int value) {
+		file.set(identification.toString() + "." + parameter.getKey(), value);
+		file.save();
 	}
 
 	@Override
-	public double getDouble(String capsule, String key) {
-		return file.getDouble(capsule + "." + key);
+	public double getDouble(UUID identification, SavableParameter parameter) {
+		return file.getDouble(identification.toString() + "." + parameter.getKey());
 	}
 
 	@Override
-	public void setDouble(String capsule, String key, double value) {
-		file.set(capsule + "." + key, value);
+	public void setDouble(UUID identification, SavableParameter parameter, double value) {
+		file.set(identification.toString() + "." + parameter.getKey(), value);
+		file.save();
 	}
 
 	@Override
-	public long getLong(String capsule, String key) {
-		return file.getLong(capsule + "." + key);
+	public long getLong(UUID identification, SavableParameter parameter) {
+		return file.getLong(identification.toString() + "." + parameter.getKey());
 	}
 
 	@Override
-	public void setLong(String capsule, String key, long value) {
-		file.set(capsule + "." + key, value);
+	public void setLong(UUID identification, SavableParameter parameter, long value) {
+		file.set(identification.toString() + "." + parameter.getKey(), value);
+		file.save();
 	}
 
 	@Override
-	public boolean getBoolean(String capsule, String key) {
-		return file.getBoolean(capsule + "." + key);
+	public boolean getBoolean(UUID identification, SavableParameter parameter) {
+		return file.getBoolean(identification.toString() + "." + parameter.getKey());
 	}
 
 	@Override
-	public void setBoolean(String capsule, String key, boolean value) {
-		file.set(capsule + "." + key, value);
+	public void setBoolean(UUID identification, SavableParameter parameter, boolean value) {
+		file.set(identification.toString() + "." + parameter.getKey(), value);
+		file.save();
 	}
 
 	@Override
-	public float getFloat(String capsule, String key) {
-		return (float) file.getDouble(capsule + "." + key);
+	public float getFloat(UUID identification, SavableParameter parameter) {
+		return (float) file.getDouble(identification.toString() + "." + parameter.getKey());
 	}
 
 	@Override
-	public void setFloat(String capsule, String key, float value) {
-		file.set(capsule + "." + key, value);
+	public void setFloat(UUID identification, SavableParameter parameter, float value) {
+		file.set(identification.toString() + "." + parameter.getKey(), value);
+		file.save();
 	}
 
-	public List<?> getList(String capsule, String key) {
-		return file.getList(capsule + "." + key);
+	public List<?> getList(UUID identification, String key) {
+		return file.getList(identification.toString() + "." + key);
 	}
 
-	public void setList(String capsule, String key, List<?> value) {
-		file.set(capsule + "." + key, value);
+	public void setList(UUID identification, String key, List<?> value) {
+		file.set(identification.toString() + "." + key, value);
+		file.save();
 	}
 }

@@ -5,11 +5,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-import me.poutineqc.base.Plugin;
+import me.poutineqc.plugin.PoutinePlugin;
 
 public class MySQL extends Database {
 
-	public MySQL(Plugin plugin, String table) {
+	public MySQL(PoutinePlugin plugin, String table) {
 		super(plugin, table);
 	}
 
@@ -22,7 +22,7 @@ public class MySQL extends Database {
         
         try {
         	return connection = DriverManager.getConnection(
-					"jdbc:mysql://" + host + ":" + port + "/" + dbname + "?autoReconnect=true", user, password);
+					"jdbc:mysql://" + host + ":" + port + "/" + plugin.getConfig().getString("database") + "?autoReconnect=true", user, password);
         } catch (SQLException ex) {
             plugin.getLogger().log(Level.SEVERE,"MySQL exception on initialize", ex);
         }

@@ -1,32 +1,28 @@
 package me.poutineqc.data;
 
-import me.poutineqc.base.Plugin;
+import java.util.UUID;
 
-public abstract class DataStorage {
+import me.poutineqc.instantiable.SavableParameter;
+
+public interface DataStorage {
 	
-	protected Plugin plugin;
-	
-	public DataStorage(Plugin plugin) {
-		this.plugin = plugin;
-	}
-	
-	public abstract String getString(String capsule, String key);
-	public abstract void setString(String capsule, String key, String value);
+	public String getString(UUID identification, SavableParameter parameter);
+	public void setString(UUID identification, SavableParameter parameter, String value);
 
-	public abstract int getInt(String capsule, String key);
-	public abstract void setInt(String capsule, String key, int value);
+	public int getInt(UUID identification, SavableParameter parameter);
+	public void setInt(UUID identification, SavableParameter parameter, int value);
 
-	public abstract double getDouble(String capsule, String key);
-	public abstract void setDouble(String capsule, String key, double value);
+	public double getDouble(UUID identification, SavableParameter parameter);
+	public void setDouble(UUID identification, SavableParameter parameter, double value);
 
-	public abstract long getLong(String capsule, String key);
-	public abstract void setLong(String capsule, String key, long value);
+	public long getLong(UUID identification, SavableParameter parameter);
+	public void setLong(UUID identification, SavableParameter parameter, long value);
 
-	public abstract boolean getBoolean(String capsule, String key);
-	public abstract void setBoolean(String capsule, String key, boolean value);
+	public boolean getBoolean(UUID identification, SavableParameter parameter);
+	public void setBoolean(UUID identification, SavableParameter parameter, boolean value);
 
-	public abstract float getFloat(String capsule, String key);
-	public abstract void setFloat(String capsule, String key, float value);
+	public float getFloat(UUID identification, SavableParameter parameter);
+	public void setFloat(UUID identification, SavableParameter parameter, float value);
 	
 	
 }

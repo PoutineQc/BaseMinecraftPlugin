@@ -1,12 +1,10 @@
-package me.poutineqc.base;
+package me.poutineqc.utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
-
-import me.poutineqc.utils.ItemStackManager;
 
 public class ColorManager {
 

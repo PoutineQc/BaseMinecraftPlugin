@@ -6,29 +6,32 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 
-import me.poutineqc.base.Plugin;
+import me.poutineqc.instantiable.SavableParameter;
+import me.poutineqc.plugin.PoutinePlugin;
 
-public abstract class Database extends DataStorage {
-	protected Connection connection;
-	protected String dbname;
-	private String table;
+public abstract class Database implements DataStorage {
+	
+	protected PoutinePlugin plugin;
+	protected static Connection connection;
+	
+	protected String table;
 
-	public Database(Plugin plugin, String table) {
-		super(plugin);
-		dbname = plugin.getConfig().getString("database", "minecraft");
-		this.table = plugin.getConfig().getString("tablePrefix").toUpperCase() + "_" + table.toUpperCase();
+	public Database(PoutinePlugin plugin, String table) {
+		this.plugin = plugin;
+		this.table = plugin.getConfig().getString("tablePrefix") + table;
 	}
 
 	public abstract Connection getSQLConnection();
 
-	public void load(Column primary, List<Column> columns) {
+	public void load(SavableParameter identification, List<SavableParameter> parameters) {
 		connection = getSQLConnection();
 
 		try {
 			Statement s = connection.createStatement();
-			s.executeUpdate(getCreateTableQuerry(primary, columns));
+			s.executeUpdate(getCreateTableQuerry(identification, parameters));
 			s.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -36,7 +39,7 @@ public abstract class Database extends DataStorage {
 
 		initialize();
 	}
-
+	
 	public void initialize() {
 		connection = getSQLConnection();
 
@@ -53,21 +56,18 @@ public abstract class Database extends DataStorage {
 		}
 	}
 
-	public String getCreateTableQuerry(Column primary, List<Column> columns) {
+	public String getCreateTableQuerry(SavableParameter identification, List<SavableParameter> parameters) {
 		StringBuilder builder = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
 
 		builder.append(table);
 		builder.append(" (");
 
-		builder.append(primary.getQuerryPart());
-		builder.append(" NOT NULL");
-
-		for (Column column : columns) {
+		for (SavableParameter parameter : parameters) {
 			builder.append(",");
-			builder.append(column.getQuerryPart());
+			builder.append(parameter.getCreateQuerryPart());
 		}
 
-		builder.append("PRIMARY KEY (`" + primary.getName() + "`)");
+		builder.append("PRIMARY KEY (`" + identification.getKey() + "`)");
 		builder.append(");");
 
 		return builder.toString();
@@ -134,14 +134,73 @@ public abstract class Database extends DataStorage {
 	}
 
 	@Override
-	public String getString(String capsule, String key) {
-		String value = null;
+	public String getString(UUID identification, SavableParameter parameter) {
+		return getValue(identification, parameter);
+	}
+
+	@Override
+	public void setString(UUID identification, SavableParameter parameter, String value) {
+		setValue(identification, parameter, value);
+	}
+
+	@Override
+	public int getInt(UUID identification, SavableParameter parameter) {
+		return getValue(identification, parameter);
+	}
+
+	@Override
+	public void setInt(UUID identification, SavableParameter parameter, int value) {
+		setValue(identification, parameter, value);
+	}
+
+	@Override
+	public double getDouble(UUID identification, SavableParameter parameter) {
+		return getValue(identification, parameter);
+	}
+
+	@Override
+	public void setDouble(UUID identification, SavableParameter parameter, double value) {
+		setValue(identification, parameter, value);
+	}
+
+	@Override
+	public long getLong(UUID identification, SavableParameter parameter) {
+		return getValue(identification, parameter);
+	}
+
+	@Override
+	public void setLong(UUID identification, SavableParameter parameter, long value) {
+		setValue(identification, parameter, value);
+	}
+
+	@Override
+	public boolean getBoolean(UUID identification, SavableParameter parameter) {
+		return getValue(identification, parameter);
+	}
+
+	@Override
+	public void setBoolean(UUID identification, SavableParameter parameter, boolean value) {
+		setValue(identification, parameter, value);
+	}
+
+	@Override
+	public float getFloat(UUID identification, SavableParameter parameter) {
+		return getValue(identification, parameter);
+	}
+
+	@Override
+	public void setFloat(UUID identification, SavableParameter parameter, float value) {
+		setValue(identification, parameter, value);
+	}
+	
+	public <T> T getValue(UUID identification, SavableParameter parameter) throws ClassCastException {
+		T value = null;
 
 		try {
-			ResultSet rs = query("SELECT `" + key + "` FROM " + table + " WHERE player = '" + capsule + "';");
+			ResultSet rs = query("SELECT `" + parameter.getKey() + "` FROM " + table + " WHERE player = '" + identification.toString() + "';");
 			while (rs.next()) {
-				if (rs.getString("uuid").equalsIgnoreCase(capsule)) {
-					value = rs.getString(key);
+				if (rs.getString("uuid").equalsIgnoreCase(identification.toString())) {
+					value = (T) rs.getObject(parameter.getKey());
 				}
 			}
 		} catch (SQLException ex) {
@@ -150,129 +209,9 @@ public abstract class Database extends DataStorage {
 
 		return value;
 	}
-
-	@Override
-	public void setString(String capsule, String key, String value) {
-		update("UPDATE " + table + " SET `" + key + "`='" + value + "' WHERE UUID='" + capsule + "';");
+	
+	public <T> void setValue(UUID identification, SavableParameter parameter, T value) {
+		update("UPDATE " + table + " SET `" + parameter.getKey() + "`='" + value.toString() + "' WHERE UUID='" + identification.toString() + "';");
 	}
-
-	@Override
-	public int getInt(String capsule, String key) {
-		int value = 0;
-
-		try {
-			ResultSet rs = query("SELECT `" + key + "` FROM " + table + " WHERE player = '" + capsule + "';");
-			while (rs.next()) {
-				if (rs.getString("uuid").equalsIgnoreCase(capsule)) {
-					value = rs.getInt(key);
-				}
-			}
-		} catch (SQLException ex) {
-			plugin.getLogger().log(Level.SEVERE, "Couldn't execute MySQL statement: ", ex);
-		}
-
-		return value;
-	}
-
-	@Override
-	public void setInt(String capsule, String key, int value) {
-		update("UPDATE " + table + " SET `" + key + "`='" + value + "' WHERE UUID='" + capsule + "';");
-
-	}
-
-	@Override
-	public double getDouble(String capsule, String key) {
-		double value = 0;
-
-		try {
-			ResultSet rs = query("SELECT `" + key + "` FROM " + table + " WHERE player = '" + capsule + "';");
-			while (rs.next()) {
-				if (rs.getString("uuid").equalsIgnoreCase(capsule)) {
-					value = rs.getDouble(key);
-				}
-			}
-		} catch (SQLException ex) {
-			plugin.getLogger().log(Level.SEVERE, "Couldn't execute MySQL statement: ", ex);
-		}
-
-		return value;
-	}
-
-	@Override
-	public void setDouble(String capsule, String key, double value) {
-		update("UPDATE " + table + " SET `" + key + "`='" + value + "' WHERE UUID='" + capsule + "';");
-
-	}
-
-	@Override
-	public long getLong(String capsule, String key) {
-		long value = 0;
-
-		try {
-			ResultSet rs = query("SELECT `" + key + "` FROM " + table + " WHERE player = '" + capsule + "';");
-			while (rs.next()) {
-				if (rs.getString("uuid").equalsIgnoreCase(capsule)) {
-					value = rs.getLong(key);
-				}
-			}
-		} catch (SQLException ex) {
-			plugin.getLogger().log(Level.SEVERE, "Couldn't execute MySQL statement: ", ex);
-		}
-
-		return value;
-	}
-
-	@Override
-	public void setLong(String capsule, String key, long value) {
-		update("UPDATE " + table + " SET `" + key + "`='" + value + "' WHERE UUID='" + capsule + "';");
-
-	}
-
-	@Override
-	public boolean getBoolean(String capsule, String key) {
-		boolean value = false;
-
-		try {
-			ResultSet rs = query("SELECT `" + key + "` FROM " + table + " WHERE player = '" + capsule + "';");
-			while (rs.next()) {
-				if (rs.getString("uuid").equalsIgnoreCase(capsule)) {
-					value = rs.getBoolean(key);
-				}
-			}
-		} catch (SQLException ex) {
-			plugin.getLogger().log(Level.SEVERE, "Couldn't execute MySQL statement: ", ex);
-		}
-
-		return value;
-	}
-
-	@Override
-	public void setBoolean(String capsule, String key, boolean value) {
-		update("UPDATE " + table + " SET `" + key + "`='" + value + "' WHERE UUID='" + capsule + "';");
-
-	}
-
-	@Override
-	public float getFloat(String capsule, String key) {
-		float value = 0;
-
-		try {
-			ResultSet rs = query("SELECT `" + key + "` FROM " + table + " WHERE player = '" + capsule + "';");
-			while (rs.next()) {
-				if (rs.getString("uuid").equalsIgnoreCase(capsule)) {
-					value = rs.getFloat(key);
-				}
-			}
-		} catch (SQLException ex) {
-			plugin.getLogger().log(Level.SEVERE, "Couldn't execute MySQL statement: ", ex);
-		}
-
-		return value;
-	}
-
-	@Override
-	public void setFloat(String capsule, String key, float value) {
-		update("UPDATE " + table + " SET `" + key + "`='" + value + "' WHERE UUID='" + capsule + "';");
-
-	}
+	
 }

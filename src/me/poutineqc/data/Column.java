@@ -1,19 +1,23 @@
 package me.poutineqc.data;
 
-public class Column {
+import me.poutineqc.instantiable.SavableParameter;
+
+public class Column<T extends SavableParameter, S> {
 	
 	private String name;
-	private ValueType type;
-	private String defaultValue;
+	private T defaultValue;
 	
-	public Column(String name, ValueType type, String defaultValue) {
+	public Column(String name, T defaultValue) {
 		this.name = name;
-		this.type = type;
 		this.defaultValue = defaultValue;
 	}
 	
-	public Column(String name, ValueType type) {
-		this(name, type, null);
+	public Column(String name) {
+		this.name = name;
+	}
+
+	public void setDefault(T defaultValue) {
+		this.defaultValue = defaultValue;
 	}
 
 	public String getQuerryPart() {
@@ -21,28 +25,28 @@ public class Column {
 		
 		builder.append("`" + name + "` ");
 		
-		switch (type) {
-		case BOOLEAN:
+		switch (defaultValue.getClass().getSimpleName()) {
+		case "Boolean":
 			builder.append("BOOLEAN");
 			break;
 			
-		case DOUBLE:
+		case "Double":
 			builder.append("DOUBLE");
 			break;
 			
-		case INTEGER:
+		case "Integer":
 			builder.append("INT");
 			break;
 			
-		case FLOAT:
+		case "Float":
 			builder.append("FLOAT");
 			break;
 			
-		case LONG:
+		case "Long":
 			builder.append("LONG");
 			break;
 			
-		case STRING:
+		case "String":
 			builder.append("VARCHAR(64)");
 			break;
 		}
@@ -56,6 +60,10 @@ public class Column {
 
 	public String getName() {
 		return name;
+	}
+
+	public T getDefaultValue() {
+		return defaultValue;
 	}
 	
 }
