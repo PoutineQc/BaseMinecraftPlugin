@@ -12,12 +12,30 @@ import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.plugin.PoutinePlugin;
 import ca.poutineqc.base.utils.Pair;
 
+/**
+ * A FlatFile that is used to store data on. It can read or write Data. It
+ * implements DataStorage.
+ * 
+ * @author Sébastien Chagnon
+ * @see DataStorage
+ */
 public class FlatFile implements DataStorage {
 
 	private PluginYAMLFile file;
 
-	public FlatFile(PoutinePlugin plugin, String fileName, boolean builtIn, String... folders) {
-		file = new PluginYAMLFile(fileName, builtIn, folders);
+	/**
+	 * Default constructor.
+	 * 
+	 * @param plugin
+	 *            - the main class of the plugin
+	 * @param fileName
+	 *            - the file name to be used for the creation of the file with
+	 *            the PYAMLFile
+	 * @param folders
+	 *            - the folders in which the file should be stored
+	 */
+	public FlatFile(PoutinePlugin plugin, String fileName, String... folders) {
+		file = new PluginYAMLFile(fileName, false, folders);
 	}
 
 	@Override

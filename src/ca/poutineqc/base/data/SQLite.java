@@ -9,11 +9,31 @@ import java.util.logging.Level;
 
 import ca.poutineqc.base.plugin.PoutinePlugin;
 
+/**
+ * A SQLite connection to a Database. Used to store data on it and read data
+ * from it. Can only be accessed locally. All the data is stored on a .sql file.
+ * 
+ * @author Sébastien Chagnon
+ * @see Database
+ * @see DataStorage
+ * @see Connection
+ */
 public class SQLite extends Database {
+
+	/**
+	 * Parameter constructor
+	 * 
+	 * @param plugin
+	 *            - the main class of the plugin
+	 * @param table
+	 *            - the name of the table that is going to be used to store data
+	 *            on
+	 */
 	public SQLite(PoutinePlugin plugin, String table) {
 		super(plugin, table);
 	}
 
+	@Override
 	public Connection getSQLConnection() {
 		File dataFolder = new File(plugin.getDataFolder(), plugin.getConfig().getString("database") + ".db");
 		if (!dataFolder.exists()) {

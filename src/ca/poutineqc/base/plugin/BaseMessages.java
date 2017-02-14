@@ -2,7 +2,11 @@ package ca.poutineqc.base.plugin;
 
 public enum BaseMessages implements Messages {
 
-	LANGUAGE_NAME("languageName", "english"), PREFIX("prefix", "[pl]"), NOBODY("keyWordNoOne", "no one yet");
+	LANGUAGE_NAME("languageName", "english"),
+
+	PREFIX("prefix", "[pl]"),
+
+	NOBODY("keyWordNoOne", "no one yet");
 
 	private String key;
 	private String defaultValue;

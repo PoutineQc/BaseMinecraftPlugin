@@ -61,7 +61,7 @@ public abstract class BaseArena implements Savable {
 			break;
 		case "flatfiles":
 
-			data = new FlatFile(plugin, getTableName().toLowerCase(), false);
+			data = new FlatFile(plugin, getTableName().toLowerCase());
 
 			break;
 		case "sqlite":
