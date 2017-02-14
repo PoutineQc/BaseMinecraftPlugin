@@ -131,16 +131,19 @@ public abstract class BasePlayer implements Savable {
 	 * * Getters and Setters * *
 	 *******************************************************/
 
+	
+	public static String getTableName() {
+		return TABLE_NAME;
+	}
+	
+	@Override
 	public UUID getUUID() {
 		return uuid.getValue();
 	}
 	
+	@Override
 	public String getName() {
 		return getPlayer().getDisplayName();
-	}
-	
-	public static String getTableName() {
-		return TABLE_NAME;
 	}
 
 	public Player getPlayer() {

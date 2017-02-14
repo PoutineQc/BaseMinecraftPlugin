@@ -17,32 +17,33 @@ import ca.poutineqc.base.utils.Pair;
 
 public abstract class Database implements DataStorage {
 
-	/*******************************************************
-	 * * Abstract Methods * *
-	 *******************************************************/
+	//=========================================================================
+    // Abstract Methods
+    //=========================================================================
+
 	public abstract Connection getSQLConnection();
 
-	/*******************************************************
-	 * * Fields * *
-	 *******************************************************/
+	//=========================================================================
+    // Fields
+    //=========================================================================
 
 	protected PoutinePlugin plugin;
 	protected static Connection connection;
 
 	protected String table;
 
-	/*******************************************************
-	 * * Constructors * *
-	 *******************************************************/
+	//=========================================================================
+    // Constructor(s)
+    //=========================================================================
 
 	public Database(PoutinePlugin plugin, String table) {
 		this.plugin = plugin;
 		this.table = plugin.getConfig().getString("tablePrefix") + table;
 	}
 
-	/*******************************************************
-	 * * Database handlers * *
-	 *******************************************************/
+	//=========================================================================
+    // Database Handlers
+    //=========================================================================
 
 	public void load(SavableParameter identification, List<SavableParameter> parameters) {
 		connection = getSQLConnection();
@@ -110,9 +111,9 @@ public abstract class Database implements DataStorage {
 		}
 	}
 
-	/*******************************************************
-	 * * Query builders * *
-	 *******************************************************/
+	//=========================================================================
+    // Query Builders
+    //=========================================================================
 
 	private String getCreateTableQuery(SavableParameter identification, List<SavableParameter> parameters) {
 		StringBuilder builder = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
@@ -161,7 +162,8 @@ public abstract class Database implements DataStorage {
 		return sb.toString();
 	}
 
-	private String getMultipleUpdateQuery(Pair<SavableParameter, UUID> identification, List<Pair<SavableParameter, String>> entries) {
+	private String getMultipleUpdateQuery(Pair<SavableParameter, UUID> identification,
+			List<Pair<SavableParameter, String>> entries) {
 		StringBuilder sb = new StringBuilder("UPDATE ");
 
 		sb.append(table);
@@ -186,9 +188,9 @@ public abstract class Database implements DataStorage {
 		return sb.toString();
 	}
 
-	/*******************************************************
-	 * * Data getters and setters * *
-	 *******************************************************/
+	//=========================================================================
+    // Database Accessors
+    //=========================================================================
 
 	@Override
 	public List<UUID> getAllIdentifications(SavableParameter parameter) {
@@ -268,93 +270,36 @@ public abstract class Database implements DataStorage {
 	public void setValues(Pair<SavableParameter, UUID> identification, List<Pair<SavableParameter, String>> entries) {
 		update(getMultipleUpdateQuery(identification, entries));
 	}
-	
-
-	// @Override
-	// public String getString(Pair<SavableParameter, UUID> identification,
-	// SavableParameter parameter) {
-	// return getValue(identification, parameter);
-	// }
 
 	@Override
 	public void setString(Pair<SavableParameter, UUID> identification, SavableParameter parameter, String value) {
 		setValue(identification, parameter, value);
 	}
 
-	// @Override
-	// public int getInt(Pair<SavableParameter, UUID> identification,
-	// SavableParameter parameter) {
-	// return getValue(identification, parameter);
-	// }
-
 	@Override
 	public void setInt(Pair<SavableParameter, UUID> identification, SavableParameter parameter, int value) {
 		setValue(identification, parameter, value);
 	}
-
-	// @Override
-	// public double getDouble(Pair<SavableParameter, UUID> identification,
-	// SavableParameter parameter) {
-	// return getValue(identification, parameter);
-	// }
 
 	@Override
 	public void setDouble(Pair<SavableParameter, UUID> identification, SavableParameter parameter, double value) {
 		setValue(identification, parameter, value);
 	}
 
-	// @Override
-	// public long getLong(Pair<SavableParameter, UUID> identification,
-	// SavableParameter parameter) {
-	// return getValue(identification, parameter);
-	// }
-
 	@Override
 	public void setLong(Pair<SavableParameter, UUID> identification, SavableParameter parameter, long value) {
 		setValue(identification, parameter, value);
 	}
-
-	// @Override
-	// public boolean getBoolean(Pair<SavableParameter, UUID> identification,
-	// SavableParameter parameter) {
-	// return getValue(identification, parameter);
-	// }
 
 	@Override
 	public void setBoolean(Pair<SavableParameter, UUID> identification, SavableParameter parameter, boolean value) {
 		setValue(identification, parameter, value);
 	}
 
-	// @Override
-	// public float getFloat(Pair<SavableParameter, UUID> identification,
-	// SavableParameter parameter) {
-	// return getValue(identification, parameter);
-	// }
-
 	@Override
 	public void setFloat(Pair<SavableParameter, UUID> identification, SavableParameter parameter, float value) {
 		setValue(identification, parameter, value);
 	}
-
-	// public <T> T getValue(Pair<SavableParameter, UUID> identification,
-	// SavableParameter parameter) throws ClassCastException {
-	// T value = null;
-	//
-	// try {
-	// ResultSet rs = query("SELECT `" + parameter.getKey() + "` FROM " + table
-	// + " WHERE player = '" + identification.toString() + "';");
-	// while (rs.next()) {
-	// if (rs.getString("uuid").equalsIgnoreCase(identification.toString())) {
-	// value = (T) rs.getObject(parameter.getKey());
-	// }
-	// }
-	// } catch (SQLException ex) {
-	// plugin.getLogger().log(Level.SEVERE, "Couldn't execute SQL statement: ",
-	// ex);
-	// }
-	//
-	// return value;
-	// }
 
 	private <T> void setValue(Pair<SavableParameter, UUID> identification, SavableParameter parameter, T value) {
 		update("UPDATE " + table + " SET `" + parameter.getKey() + "`='" + value.toString() + "' WHERE UUID='"

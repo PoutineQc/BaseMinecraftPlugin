@@ -43,7 +43,6 @@ public abstract class BaseArena implements Savable {
 
 	public static List<SavableParameter> getParameters() {
 		List<SavableParameter> returnValue = new ArrayList<SavableParameter>();
-
 		for (Data parameter : Data.values())
 			returnValue.add(parameter);
 
@@ -104,7 +103,6 @@ public abstract class BaseArena implements Savable {
 	public BaseArena(PoutinePlugin plugin, UUID uuid) {
 
 		checkDataStorage(plugin);
-
 		this.uuid = new Pair<SavableParameter, UUID>(Data.UUID, uuid);
 		
 		try {
