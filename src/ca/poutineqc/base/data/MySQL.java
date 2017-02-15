@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-import ca.poutineqc.base.plugin.PoutinePlugin;
+import ca.poutineqc.base.plugin.PPlugin;
 
 /**
  * A MySQL connection to a Database. Used to store data on it and read data from
@@ -27,8 +27,9 @@ public class MySQL extends Database {
 	 * @param table
 	 *            - the name of the table that is going to be used to store data
 	 *            on
+	 * @see PPlugin
 	 */
-	public MySQL(PoutinePlugin plugin, String table) {
+	public MySQL(PPlugin plugin, String table) {
 		super(plugin, table);
 	}
 

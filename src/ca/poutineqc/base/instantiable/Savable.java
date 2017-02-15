@@ -1,6 +1,9 @@
 package ca.poutineqc.base.instantiable;
 
+import java.util.List;
 import java.util.UUID;
+
+import ca.poutineqc.base.data.DataStorage;
 
 /**
  * Represents an Object that can be saved in a DataStorage. These objects, to be
@@ -19,13 +22,22 @@ public interface Savable {
 	 * @return the UUID of the Savable Object
 	 * @see UUID
 	 */
-	public UUID getUUID();
+	UUID getUUID();
 
 	/**
 	 * Returns the name of the Savable Object
 	 * 
 	 * @return the name of the Savable Object
 	 */
-	public String getName();
+	String getName();
+
+	/**
+	 * Returns a list of all the SavableParameter from a Savable object that can
+	 * be stored in a DataStorage
+	 * 
+	 * @return a list of all the SavableParameter from a Savable object
+	 * @see SavableParameter
+	 */
+	List<SavableParameter> getBaseParameters();
 
 }

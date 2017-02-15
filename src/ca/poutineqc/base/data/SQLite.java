@@ -7,7 +7,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-import ca.poutineqc.base.plugin.PoutinePlugin;
+import ca.poutineqc.base.plugin.PPlugin;
 
 /**
  * A SQLite connection to a Database. Used to store data on it and read data
@@ -29,7 +29,7 @@ public class SQLite extends Database {
 	 *            - the name of the table that is going to be used to store data
 	 *            on
 	 */
-	public SQLite(PoutinePlugin plugin, String table) {
+	public SQLite(PPlugin plugin, String table) {
 		super(plugin, table);
 	}
 

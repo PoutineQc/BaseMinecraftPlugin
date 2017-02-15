@@ -1,10 +1,16 @@
 package ca.poutineqc.base.instantiable;
 
-public interface Playable<T extends BasePlayer> {
+import java.security.InvalidParameterException;
+
+public interface Playable<T extends PPlayer> {
+	
 	void start();
+	void nextTurn();
 	void end();
 	void reset();
-	
+
+	void add(T player) throws InvalidParameterException;
+	boolean isInGame(T player);
 	void eliminate(T player);
-	void nextTurn();
+	boolean remove(T player);
 }

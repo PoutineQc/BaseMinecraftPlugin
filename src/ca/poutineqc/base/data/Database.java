@@ -1,10 +1,12 @@
 package ca.poutineqc.base.data;
 
+import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,52 +14,78 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 import ca.poutineqc.base.instantiable.SavableParameter;
-import ca.poutineqc.base.plugin.PoutinePlugin;
+import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Pair;
 
+/**
+ * Represents a SQL Database. Can load and maintain a connection, sent queries
+ * and receive ResultSets.
+ * 
+ * @author Sébastien Chagnon
+ */
 public abstract class Database implements DataStorage {
 
-	//=========================================================================
-    // Abstract Methods
-    //=========================================================================
+	// =========================================================================
+	// Abstract Methods
+	// =========================================================================
 
+	/**
+	 * Creates a SQL connection to a Database which has it's login and access
+	 * informations in a config.yml file.
+	 * 
+	 * @return a opened SQL connection
+	 */
 	public abstract Connection getSQLConnection();
 
-	//=========================================================================
-    // Fields
-    //=========================================================================
+	// =========================================================================
+	// Fields
+	// =========================================================================
 
-	protected PoutinePlugin plugin;
+	protected PPlugin plugin;
 	protected static Connection connection;
 
-	protected String table;
+	private String table;
 
-	//=========================================================================
-    // Constructor(s)
-    //=========================================================================
+	// =========================================================================
+	// Constructor(s)
+	// =========================================================================
 
-	public Database(PoutinePlugin plugin, String table) {
+	/**
+	 * Parameter Constructor. Creates the connection to the Database.
+	 * 
+	 * @param plugin
+	 *            - the main class of the plugin
+	 * @param table
+	 *            - the name of the table handled by this Database
+	 * @see PPlugin
+	 */
+	public Database(PPlugin plugin, String table) {
 		this.plugin = plugin;
 		this.table = plugin.getConfig().getString("tablePrefix") + table;
+
+		if (connection == null)
+			connection = getSQLConnection();
 	}
 
-	//=========================================================================
-    // Database Handlers
-    //=========================================================================
+	// =========================================================================
+	// Database Handlers
+	// =========================================================================
 
-	public void load(SavableParameter identification, List<SavableParameter> parameters) {
-		connection = getSQLConnection();
-		update(getCreateTableQuery(identification, parameters));
-
-	}
-
+	/**
+	 * To receive data from the Database. The request is specified in the query
+	 * and the result is returned as a ResultSet.
+	 * 
+	 * @param qry
+	 *            - the query that will be send to the Database
+	 * @return - The ResultSet received from the database as a result from the
+	 *         query
+	 * @see ResultSet
+	 */
 	public ResultSet query(String qry) {
-		Connection conn = null;
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 
 		try {
-			conn = getSQLConnection();
 			ps = connection.prepareStatement(qry);
 
 			rs = ps.executeQuery();
@@ -71,8 +99,6 @@ public abstract class Database implements DataStorage {
 					ps.close();
 				if (rs != null)
 					rs.close();
-				if (conn != null)
-					conn.close();
 			} catch (SQLException ex) {
 				plugin.getLogger().log(Level.SEVERE, "Failed to close SQL connection: ", ex);
 			}
@@ -81,27 +107,36 @@ public abstract class Database implements DataStorage {
 		return rs;
 	}
 
+	/**
+	 * To update the Database. The query parameter specifies what values must be
+	 * modified.
+	 * 
+	 * @param qry
+	 *            - the query that will be send to the Database
+	 */
 	public void update(String qry) {
-		Connection conn = null;
 		PreparedStatement ps = null;
 
 		try {
 			ps = connection.prepareStatement(qry);
 			ps.execute();
 		} catch (SQLException ex) {
+			connection = getSQLConnection();
 			plugin.getLogger().log(Level.SEVERE, "Couldn't execute SQL statement: ", ex);
 		} finally {
 			try {
 				if (ps != null)
 					ps.close();
-				if (conn != null)
-					conn.close();
 			} catch (SQLException ex) {
 				plugin.getLogger().log(Level.SEVERE, "Failed to close SQL connection: ", ex);
 			}
 		}
 	}
 
+	/**
+	 * Closes the connection to the Database. Should be used at the end of a
+	 * program.
+	 */
 	public void close() {
 		try {
 			if (connection != null)
@@ -111,19 +146,19 @@ public abstract class Database implements DataStorage {
 		}
 	}
 
-	//=========================================================================
-    // Query Builders
-    //=========================================================================
+	// =========================================================================
+	// Query Builders
+	// =========================================================================
 
-	private String getCreateTableQuery(SavableParameter identification, List<SavableParameter> parameters) {
+	private String getCreateTableQuery(SavableParameter identification, Collection<SavableParameter> parameters) {
 		StringBuilder builder = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
 
 		builder.append(table);
 		builder.append(" (");
 
 		for (SavableParameter parameter : parameters) {
-			builder.append(",");
 			builder.append(parameter.getCreateQuerryPart());
+			builder.append(", ");
 		}
 
 		builder.append("PRIMARY KEY (`" + identification.getKey() + "`)");
@@ -188,12 +223,23 @@ public abstract class Database implements DataStorage {
 		return sb.toString();
 	}
 
-	//=========================================================================
-    // Database Accessors
-    //=========================================================================
+	// =========================================================================
+	// Database Accessors
+	// =========================================================================
 
 	@Override
-	public List<UUID> getAllIdentifications(SavableParameter parameter) {
+	public void createTableIfNotExists(SavableParameter identification, Collection<SavableParameter> parameters) {
+		update(getCreateTableQuery(identification, parameters));
+	}
+
+	@Override
+	public void newInstance(Pair<SavableParameter, UUID> identification,
+			List<Pair<SavableParameter, String>> createParameters) {
+		update(getNewInstanceQuery(identification, createParameters));
+	}
+
+	@Override
+	public List<UUID> getAllIdentifications(SavableParameter identification) {
 		List<UUID> identifications = new ArrayList<UUID>();
 
 		String query = "SELECT * FROM " + table;
@@ -201,18 +247,18 @@ public abstract class Database implements DataStorage {
 
 		try {
 			while (rs.next()) {
-				identifications.add(UUID.fromString(rs.getString(parameter.getKey())));
+				identifications.add(UUID.fromString(rs.getString(identification.getKey())));
 			}
 		} catch (SQLException ex) {
-			plugin.getLogger().log(Level.SEVERE, "Failed to read SQL ResultSet: ", ex);
+			return null;
 		}
 
-		return null;
+		return identifications;
 	}
 
 	@Override
 	public Map<SavableParameter, String> getIndividualData(Pair<SavableParameter, UUID> identification,
-			List<SavableParameter> parameters) {
+			Collection<SavableParameter> parameters) {
 
 		String query = "SELECT * FROM " + table + " WHERE " + identification.getKey().getKey() + "='"
 				+ identification.getValue().toString() + "';";
@@ -262,12 +308,8 @@ public abstract class Database implements DataStorage {
 	}
 
 	@Override
-	public void newInstance(Pair<SavableParameter, UUID> identification,
-			List<Pair<SavableParameter, String>> createParameters) {
-		update(getNewInstanceQuery(identification, createParameters));
-	}
-
-	public void setValues(Pair<SavableParameter, UUID> identification, List<Pair<SavableParameter, String>> entries) {
+	public void setValues(Pair<SavableParameter, UUID> identification, List<Pair<SavableParameter, String>> entries)
+			throws InvalidParameterException {
 		update(getMultipleUpdateQuery(identification, entries));
 	}
 

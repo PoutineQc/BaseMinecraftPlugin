@@ -1,6 +1,6 @@
-package ca.poutineqc.base.plugin;
+package ca.poutineqc.base.lang;
 
-public interface Messages {
+public interface Message {
 	public String getKey();
 	public String getDefaultMessage();
 }

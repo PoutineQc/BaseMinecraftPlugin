@@ -1,6 +1,7 @@
 package ca.poutineqc.base.instantiable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -10,53 +11,82 @@ import org.bukkit.Location;
 import org.bukkit.World;
 
 import ca.poutineqc.base.data.DataStorage;
-import ca.poutineqc.base.data.Database;
 import ca.poutineqc.base.data.FlatFile;
 import ca.poutineqc.base.data.MySQL;
-import ca.poutineqc.base.plugin.PoutinePlugin;
+import ca.poutineqc.base.data.SQLite;
+import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.ColorManager;
 import ca.poutineqc.base.utils.Pair;
 
-public abstract class BaseArena implements Savable {
+/**
+ * A base class for an Arena. An arena is a zone where players may play games
+ * and it has many different parameters.
+ * 
+ * @author Sébastien Chagnon
+ *
+ */
+public abstract class PArena implements Savable {
 
-	/*******************************************************
-	 * * Static Fields * *
-	 *******************************************************/
+	// =========================================================================
+	// Static Fields
+	// =========================================================================
 
-	private static final String TABLE_NAME = "ARENA";
+	/**
+	 * Name of the DataStorage table
+	 */
+	public static final String TABLE_NAME = "ARENA";
 
 	protected static DataStorage data;
 
-	/*******************************************************
-	 * * Static Methods * *
-	 *******************************************************/
+	// =========================================================================
+	// Static Methods
+	// =========================================================================
 
-	public static void checkDataStorage(PoutinePlugin plugin) {
-		if (data == null)
+	/**
+	 * Checks if the DataStorage is instantiated. If it is not, instantiate it.
+	 * 
+	 * @param plugin
+	 *            the main class of the plugin
+	 * @see PPlugin
+	 */
+	public static void checkDataStorage(PPlugin plugin) {
+		if (data == null) {
 			data = openDataStorage(plugin);
+		}
 	}
-	
-	public static List<UUID> getAllIdentifications(PoutinePlugin plugin) {
+
+	/**
+	 * Returns a list of all the different identifications saved in the
+	 * DataStorage. Returns null if there are no Savables saved in the
+	 * DataStorage.
+	 * 
+	 * @param plugin
+	 *            the main class of the plugin
+	 * @return a list of all the different identifications saved in the
+	 *         DataStorage
+	 * @see PPlugin
+	 */
+	public static List<UUID> getAllIdentifications(PPlugin plugin) {
 		checkDataStorage(plugin);
 		return data.getAllIdentifications(Data.UUID);
 	}
 
-	public static List<SavableParameter> getParameters() {
-		List<SavableParameter> returnValue = new ArrayList<SavableParameter>();
-		for (Data parameter : Data.values())
-			returnValue.add(parameter);
-
-		return returnValue;
-	}
-
-	public static DataStorage openDataStorage(PoutinePlugin plugin) {
+	/**
+	 * Returns an instance of a Data Storage. It's child class is determined by
+	 * a setting saved in the config.yml file.
+	 * 
+	 * @param plugin
+	 *            the main class of the plugin
+	 * @return an instance of a DataStorage
+	 * @see DataStorage
+	 * @see PPlugin
+	 */
+	public static DataStorage openDataStorage(PPlugin plugin) {
 
 		switch (plugin.getConfig().getString("dataStorage").toLowerCase()) {
 		case "mysql":
 
-			Database mysql = new MySQL(plugin, getTableName());
-			mysql.load(Data.UUID, getParameters());
-			data = mysql;
+			data = new MySQL(plugin, getTableName());
 
 			break;
 		case "flatfiles":
@@ -67,15 +97,25 @@ public abstract class BaseArena implements Savable {
 		case "sqlite":
 		default:
 
-			Database sqlite = new MySQL(plugin, getTableName());
-			sqlite.load(Data.UUID, getParameters());
-			data = sqlite;
+			data = new SQLite(plugin, getTableName());
 
 			break;
 		}
 
 		return data;
 	}
+
+	// =========================================================================
+	// Abstract Methods
+	// =========================================================================
+
+	/**
+	 * Returns a Collection of all the SavableParameters that are used by a
+	 * child class of BaseArena.
+	 * 
+	 * @return a Collection of SavableParameters
+	 */
+	public abstract Collection<SavableParameter> getParameters();
 
 	/*******************************************************
 	 * * Fields * *
@@ -96,18 +136,20 @@ public abstract class BaseArena implements Savable {
 
 	private ColorManager colorManager;
 
-	/*******************************************************
+	/*
 	 * * Constuctors * *
 	 *******************************************************/
 
-	public BaseArena(PoutinePlugin plugin, UUID uuid) {
+	public PArena(PPlugin plugin, UUID uuid) {
 
 		checkDataStorage(plugin);
+		data.createTableIfNotExists(Data.UUID, getBaseParameters());
+
 		this.uuid = new Pair<SavableParameter, UUID>(Data.UUID, uuid);
-		
+
 		try {
-			Map<SavableParameter, String> parameters = data.getIndividualData(this.uuid, getParameters());
-			
+			Map<SavableParameter, String> parameters = data.getIndividualData(this.uuid, getBaseParameters());
+
 			this.name = parameters.get(Data.NAME);
 
 			World world = Bukkit.getWorld(UUID.fromString(parameters.get(Data.WORLD)));
@@ -147,21 +189,23 @@ public abstract class BaseArena implements Savable {
 			maxPlayer = Integer.parseInt(parameters.get(Data.MAX_PLAYER));
 
 			colorManager = new ColorManager(Long.parseLong(parameters.get(Data.COLOR_INDICE)));
-			
+
 		} catch (NumberFormatException ex) {
 			plugin.getLogger().severe("Could not load arena " + uuid.toString() + " : " + ex);
 		}
 	}
 
-	public BaseArena(PoutinePlugin plugin, String name, World world) {
+	public PArena(PPlugin plugin, String name, World world) {
 
 		checkDataStorage(plugin);
-		
+		data.createTableIfNotExists(Data.UUID, getBaseParameters());
+
 		this.uuid = new Pair<SavableParameter, UUID>(Data.UUID, UUID.randomUUID());
 		this.name = name;
 
 		List<Pair<SavableParameter, String>> createParameters = new ArrayList<Pair<SavableParameter, String>>();
 		createParameters.add(new Pair<SavableParameter, String>(Data.NAME, name));
+		createParameters.add(new Pair<SavableParameter, String>(Data.HIGHEST_PLAYER, world.getName()));
 		createParameters.add(new Pair<SavableParameter, String>(Data.WORLD, world.getName()));
 
 		data.newInstance(uuid, createParameters);
@@ -204,7 +248,7 @@ public abstract class BaseArena implements Savable {
 		colorManager = new ColorManager(Data.COLOR_INDICE.<Long>getDefaultValue());
 	}
 
-	/*******************************************************
+	/*
 	 * * Getters and Setters * *
 	 *******************************************************/
 
@@ -321,11 +365,28 @@ public abstract class BaseArena implements Savable {
 		colorManager.setColorIndice(colorIndice);
 	}
 
-
-	/*******************************************************
+	/*
 	 * * Data Enumeration * *
 	 *******************************************************/
 
+	@Override
+	public List<SavableParameter> getBaseParameters() {
+		List<SavableParameter> returnValue = new ArrayList<SavableParameter>();
+		for (Data parameter : Data.values())
+			returnValue.add(parameter);
+
+		returnValue.addAll(getParameters());
+
+		return returnValue;
+	}
+
+	/**
+	 * Represents all the Parameters from a BaseArena that may be saved in a
+	 * DataStorage.
+	 * 
+	 * @author Sébastien Chagnon
+	 * @see SavableParameter
+	 */
 	private enum Data implements SavableParameter {
 		UUID("uuid", DataValue.STRING),
 

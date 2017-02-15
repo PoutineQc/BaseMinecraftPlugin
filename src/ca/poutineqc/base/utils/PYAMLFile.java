@@ -1,4 +1,4 @@
-package ca.poutineqc.base.data;
+package ca.poutineqc.base.utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,13 +8,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import ca.poutineqc.base.plugin.PoutinePlugin;
+import ca.poutineqc.base.plugin.PPlugin;
 
-public class PluginYAMLFile extends YamlConfiguration {
+public class PYAMLFile extends YamlConfiguration {
 
 	private File file;
  
-	public PluginYAMLFile(String fileName, boolean buildIn, String... folders) {
+	public PYAMLFile(String fileName, boolean buildIn, String... folders) {
 		file = getFile(fileName, buildIn, folders);
 		if (!file.exists())
 			return;
@@ -27,7 +27,7 @@ public class PluginYAMLFile extends YamlConfiguration {
 	}
 
 	private static File getFile(String fileName, boolean buildIn, String... folders) {
-		PoutinePlugin plugin = PoutinePlugin.get();
+		PPlugin plugin = PPlugin.get();
 		String completeFileName = fileName + ".yml";
 		File folder = getFolder(plugin, folders);
 		File file = new File(folder, completeFileName);
@@ -61,7 +61,7 @@ public class PluginYAMLFile extends YamlConfiguration {
 		return file;
 	}
 
-	private static File getFolder(PoutinePlugin plugin, String... folders) {
+	private static File getFolder(PPlugin plugin, String... folders) {
 
 		File folder = new File(".");
 		for (String folderName : folders) {

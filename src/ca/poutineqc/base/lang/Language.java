@@ -1,46 +1,63 @@
 package ca.poutineqc.base.lang;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import ca.poutineqc.base.data.PluginYAMLFile;
-import ca.poutineqc.base.plugin.ConfigurationKey;
-import ca.poutineqc.base.plugin.PoutinePlugin;
+import ca.poutineqc.base.plugin.PConfigKey;
+import ca.poutineqc.base.plugin.PPlugin;
+import ca.poutineqc.base.utils.PYAMLFile;
 
 public class Language {
 
 	public static final String FOLDER_NAME = "languageFiles";
 
-	PluginYAMLFile yamlFile;
+	private static ChatColor primary;
+	private static ChatColor secondary;
+
+	public static void setPrimaryAndSecondaryColors(ChatColor primary, ChatColor secondary) {
+		Language.primary = primary;
+		Language.secondary = secondary;
+	};
+
+	PYAMLFile yamlFile;
 	private boolean prefixBeforeEveryMessage;
-	private HashMap<String, String> messages;
-	private String prefixKey;
+	private Map<Message, String> messages;
+	private Message prefix;
 
-	public Language(PoutinePlugin plugin, String fileName, boolean builtIn) {
-		prefixBeforeEveryMessage = plugin.getConfig().getBoolean(ConfigurationKey.PREFIX.getKey(), true);
+	public Language(PPlugin plugin, String fileName, boolean builtIn, Message prefix) {
+		messages = new HashMap<Message, String>();
+		prefixBeforeEveryMessage = plugin.getConfig().getBoolean(PConfigKey.PREFIX.getKey(), true);
 
-		yamlFile = new PluginYAMLFile(fileName, builtIn, FOLDER_NAME);
+		this.prefix = prefix;
+		yamlFile = new PYAMLFile(fileName, builtIn, FOLDER_NAME);
 	}
 
-	public void sendMessage(Player player, String key) {
+	public void sendMessage(Player player, Message message) {
 		if (prefixBeforeEveryMessage)
-			player.sendMessage(
-					ChatColor.translateAlternateColorCodes('&', getMessage(prefixKey) + " " + getMessage(key)));
+			player.sendMessage(getMessage(prefix).replace("%plugin%", PPlugin.get().getName()) + " " + getMessage(message));
 		else
-			player.sendMessage(ChatColor.translateAlternateColorCodes('&', getMessage(key)));
+			player.sendMessage(getMessage(message));
 	}
 
-	public void addMessage(String key, String defaultValue) {
-		messages.put(key, yamlFile.getString(key, defaultValue));
+	public String getMessage(Message message) {
+		return ChatColor.translateAlternateColorCodes('&', messages.get(message)
+				.replaceAll("%p%", "&" + primary.getChar()).replaceAll("%s%", "&" + secondary.getChar()));
 	}
 
-	public void setPrefixKey(String prefixKey) {
-		this.prefixKey = prefixKey;
+	public void addMessages(Collection<Message> messages) {
+		for (Message message : messages)
+			this.messages.put(message, yamlFile.getString(message.getKey(), message.getDefaultMessage()));
 	}
 
-	public String getMessage(String key) {
-		return messages.get(key);
+	public String getLanguageName() {
+		return ChatColor.stripColor(getMessage(PMessages.LANGUAGE_NAME));
+	}
+
+	public String getLanguageKey() {
+		return yamlFile.getName().replace(".yml", "");
 	}
 }
