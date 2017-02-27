@@ -1,7 +1,6 @@
 package ca.poutineqc.base.instantiable;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +13,8 @@ import ca.poutineqc.base.data.DataStorage;
 import ca.poutineqc.base.data.FlatFile;
 import ca.poutineqc.base.data.MySQL;
 import ca.poutineqc.base.data.SQLite;
+import ca.poutineqc.base.data.values.PUUID;
+import ca.poutineqc.base.data.values.SValue;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.Message;
 import ca.poutineqc.base.plugin.PPlugin;
@@ -97,22 +98,10 @@ public abstract class PPlayer implements Savable {
 	}
 
 	// =========================================================================
-	// Abstract Methods
-	// =========================================================================
-
-	/**
-	 * Returns a Collection of all the SavableParameters that are used by a
-	 * child class of BasePlayer.
-	 * 
-	 * @return a Collection of SavableParameters
-	 */
-	public abstract Collection<SavableParameter> getParameters();
-
-	// =========================================================================
 	// Fields
 	// =========================================================================
 
-	private Pair<SavableParameter, UUID> uuid;
+	private final PUUID uuid;
 
 	private OfflinePlayer player;
 	private Language language;
@@ -135,20 +124,14 @@ public abstract class PPlayer implements Savable {
 	public PPlayer(PPlugin plugin, UUID uuid) {
 
 		checkDataStorage(plugin);
-		data.createTableIfNotExists(Data.UUID, getBaseParameters());
 
-		this.uuid = new Pair<SavableParameter, UUID>(Data.UUID, uuid);
+		this.uuid = new PUUID(uuid);
 		this.player = Bukkit.getOfflinePlayer(uuid);
 
-		try {
-			Map<SavableParameter, String> parameters = data.getIndividualData(this.uuid, getBaseParameters());
+		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, getParameters());
+		
+		this.language = plugin.getLanguageManager().getLanguage(parameters.get(Data.LANGUAGE));
 
-			this.language = plugin.getLanguageManager().getLanguage(parameters.get(Data.LANGUAGE));
-
-		} catch (NumberFormatException ex) {
-			this.language = plugin.getLanguageManager().getDefault();
-			plugin.getLogger().severe("Could not load player " + uuid.toString() + " : " + ex);
-		}
 	}
 
 	/**
@@ -156,7 +139,7 @@ public abstract class PPlayer implements Savable {
 	 * DataStorage.
 	 * 
 	 * @param plugin
-	 *          the main class of the plugin
+	 *            the main class of the plugin
 	 * @param player
 	 *            the player which this instance is created for.
 	 * @see PPlugin
@@ -165,13 +148,16 @@ public abstract class PPlayer implements Savable {
 	public PPlayer(PPlugin plugin, Player player) {
 
 		checkDataStorage(plugin);
-		data.createTableIfNotExists(Data.UUID, getBaseParameters());
 
-		this.uuid = new Pair<SavableParameter, UUID>(Data.UUID, player.getUniqueId());
+		this.uuid = new PUUID(player.getUniqueId());
 		this.player = player;
 		this.language = plugin.getLanguageManager().getDefault();
 
-		data.newInstance(uuid, new ArrayList<Pair<SavableParameter, String>>());
+		List<Pair<SavableParameter, SValue>> toSave = new ArrayList<Pair<SavableParameter, SValue>>();
+		toSave.add(new Pair<SavableParameter, SValue>(Data.UUID, this.uuid));
+		toSave.add(new Pair<SavableParameter, SValue>(Data.LANGUAGE, this.language));
+		
+		data.newInstance(Data.UUID, uuid, toSave);
 	}
 
 	// =========================================================================
@@ -180,7 +166,7 @@ public abstract class PPlayer implements Savable {
 
 	@Override
 	public UUID getUUID() {
-		return uuid.getValue();
+		return uuid.getUUID();
 	}
 
 	@Override
@@ -222,13 +208,11 @@ public abstract class PPlayer implements Savable {
 	 *******************************************************/
 
 	@Override
-	public List<SavableParameter> getBaseParameters() {
+	public List<SavableParameter> getParameters() {
 		List<SavableParameter> returnValue = new ArrayList<SavableParameter>();
 
 		for (Data parameter : Data.values())
 			returnValue.add(parameter);
-
-		returnValue.addAll(getParameters());
 
 		return returnValue;
 	}
@@ -241,27 +225,16 @@ public abstract class PPlayer implements Savable {
 	 * @see SavableParameter
 	 */
 	private enum Data implements SavableParameter {
-		UUID("uuid", DataValue.STRING), LANGUAGE("language", DataValue.STRING);
+		UUID("uuid", ""),
+
+		LANGUAGE("language", "");
 
 		private String key;
-		private DataValue dataValue;
 		private String defaultValue;
 
-		private Data(String dataName, DataValue dataValue, Object defaultValue) {
+		private Data(String dataName, String defaultValue) {
 			this.key = dataName;
-			this.dataValue = dataValue;
-			this.defaultValue = String.valueOf(defaultValue);
-		}
-
-		private Data(String dataName, DataValue dataValue) {
-			this.key = dataName;
-			this.dataValue = dataValue;
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public <T> T getDefaultValue() throws ClassCastException {
-			return (T) defaultValue;
+			this.defaultValue = defaultValue;
 		}
 
 		@Override
@@ -270,27 +243,14 @@ public abstract class PPlayer implements Savable {
 		}
 
 		@Override
-		public String getCreateQuerryPart() {
-			StringBuilder builder = new StringBuilder();
-
-			builder.append("`" + key + "` ");
-
-			builder.append(dataValue.getSqlName());
-
-			if (defaultValue != null)
-				builder.append(" DEFAULT '" + defaultValue.toString() + "'");
-
-			return builder.toString();
-		}
-
-		@Override
-		public DataValue getType() {
-			return dataValue;
+		public String getDefaultValue() {
+			return defaultValue;
 		}
 	}
 
 	public void setLanguage(Language language) {
 		this.language = language;
-		data.setString(uuid, Data.LANGUAGE, language.getLanguageKey());
+		
+		data.set(Data.UUID, uuid, Data.LANGUAGE, language);
 	}
 }

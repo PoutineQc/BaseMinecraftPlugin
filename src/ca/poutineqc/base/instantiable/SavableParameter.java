@@ -2,26 +2,23 @@ package ca.poutineqc.base.instantiable;
 
 public interface SavableParameter {
 
-	public enum DataValue {
-		BOOLEAN("BOOLEAN"), DOUBLE("DOUBLE"), FLOAT("FLOAT"), INTEGER("INT"), LONG("LONG"), STRING("VARCHAR(64)");
+	/**
+	 * Returns the default value for this SavableParameter
+	 * 
+	 * @return the default value for this SavableParameter
+	 * @throws ClassCastException
+	 *             if the true value of this SavableParameter can't be cast to
+	 *             the required value
+	 */
+	String getDefaultValue();
 
-		private String sqlName;
-
-		private DataValue(String sqlName) {
-			this.sqlName = sqlName;
-		}
-
-		public String getSqlName() {
-			return sqlName;
-		}
-	}
-
-	<T> T getDefaultValue() throws ClassCastException;
-
+	/**
+	 * Returns the key of this SavableParameter. This key is the name of the
+	 * column as it is stored in a DataStorage
+	 * 
+	 * @return the key of this SavableParameter as it is stored in the
+	 *         DataStorage
+	 */
 	public String getKey();
-
-	public String getCreateQuerryPart();
-
-	public DataValue getType();
 
 }

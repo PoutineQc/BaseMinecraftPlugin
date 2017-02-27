@@ -12,7 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ca.poutineqc.base.commands.PCommand;
 import ca.poutineqc.base.commands.Command;
 import ca.poutineqc.base.commands.CommandManager;
-import ca.poutineqc.base.instantiable.PArena;
+import ca.poutineqc.base.instantiable.Arena;
 import ca.poutineqc.base.instantiable.PPlayer;
 import ca.poutineqc.base.instantiable.SavableManager;
 import ca.poutineqc.base.lang.Language;
@@ -29,7 +29,7 @@ public abstract class PPlugin extends JavaPlugin {
 	private LanguagesManager languages;
 	private CommandManager commands;
 	private SavableManager<? extends PPlayer> players;
-	private SavableManager<? extends PArena> arenas;
+	private SavableManager<? extends Arena> arenas;
 
 
 	@Override
@@ -56,7 +56,7 @@ public abstract class PPlugin extends JavaPlugin {
 
 	public abstract SavableManager<? extends PPlayer> getNewPlayerManager();
 
-	public abstract SavableManager<? extends PArena> getNewArenaManager();
+	public abstract SavableManager<? extends Arena> getNewArenaManager();
 
 	public abstract LanguagesManager getNewLanguageManager();
 
@@ -73,7 +73,7 @@ public abstract class PPlugin extends JavaPlugin {
 
 	public CommandManager getCommandManager() {
 		if (commands == null) {
-			commands = new CommandManager(PCommand.values());
+			commands = new CommandManager();
 			commands.addCommands(getCommands());
 		}
 
@@ -89,7 +89,7 @@ public abstract class PPlugin extends JavaPlugin {
 		return players;
 	}
 
-	public SavableManager<? extends PArena> getArenaManager() {
+	public SavableManager<? extends Arena> getArenaManager() {
 		if (arenas == null)
 			arenas = getNewArenaManager();
 
@@ -120,4 +120,6 @@ public abstract class PPlugin extends JavaPlugin {
 	}
 	
 	abstract void reloadChild();
+
+	public abstract <T extends PPlayer> T newPlayer(Player player);
 }

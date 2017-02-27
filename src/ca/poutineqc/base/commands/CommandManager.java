@@ -12,8 +12,8 @@ public class CommandManager {
 
 	Collection<Command> commands;
 	
-	public CommandManager(PCommand[] baseCommands) {
-		
+	public CommandManager() {
+		this.commands = new ArrayList<Command>();
 	}
 	
 	public void addCommands(Collection<Command> commands) {

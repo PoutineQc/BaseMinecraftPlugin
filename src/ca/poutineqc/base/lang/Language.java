@@ -7,11 +7,14 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import ca.poutineqc.base.data.values.SValue;
 import ca.poutineqc.base.plugin.PConfigKey;
 import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.PYAMLFile;
 
-public class Language {
+public class Language implements SValue {
+
+	public static final int MAX_STRING_LENGTH = 16;
 
 	public static final String FOLDER_NAME = "languageFiles";
 
@@ -57,7 +60,13 @@ public class Language {
 		return ChatColor.stripColor(getMessage(PMessages.LANGUAGE_NAME));
 	}
 
-	public String getLanguageKey() {
-		return yamlFile.getName().replace(".yml", "");
+	@Override
+	public String toSString() {
+		return pad(yamlFile.getName().replace(".yml", ""));
+	}
+
+	@Override
+	public int getMaxToStringLength() {
+		return MAX_STRING_LENGTH;
 	}
 }

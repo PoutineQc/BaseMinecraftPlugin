@@ -6,26 +6,31 @@ import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 
-public class ColorManager {
+import ca.poutineqc.base.data.values.SLong;
+import ca.poutineqc.base.data.values.SValue;
 
-	private long colorIndice;
+public class ColorManager implements SValue {
+
+	public static final int MAX_STRING_LENGTH = SLong.MAX_STRING_LENGTH;
+
+	private SLong colorIndice;
 	private List<ItemStackManager> allBlocks;
 	private List<ItemStackManager> onlyChoosenBlocks;
 
-	public ColorManager(long colorIndice) {
-		this.colorIndice = colorIndice;
+	public ColorManager(String value) {
+		this.colorIndice = new SLong(value);
 		updateLists();
 	}
 
-	public void setColorIndice(long colorIndice) {
-		this.colorIndice = colorIndice;
+	public void setColorIndice(long value) {
+		this.colorIndice = new SLong(value);
 		updateLists();
 	}
 
 	public void updateLists() {
 		allBlocks = new ArrayList<ItemStackManager>();
 		onlyChoosenBlocks = new ArrayList<ItemStackManager>();
-		long tempColorIndice = colorIndice;
+		long tempColorIndice = colorIndice.getLong();
 
 		for (int i = 31; i >= 0; i--) {
 			ItemStackManager icon;
@@ -63,6 +68,17 @@ public class ColorManager {
 	}
 
 	public long getColorIndice() {
-		return colorIndice;
+		return colorIndice.getLong();
+	}
+
+	@Override
+	public String toSString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getMaxToStringLength() {
+		return MAX_STRING_LENGTH;
 	}
 }

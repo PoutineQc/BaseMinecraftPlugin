@@ -117,8 +117,8 @@ public enum PCommand implements Command {
 					+ responseLanguage.getMessage(PMessages.HELP_DESCRIPTION_SETUP)));
 			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&5/" + cmdValue + " help admin &8- "
 					+ responseLanguage.getMessage(PMessages.HELP_DESCRIPTION_ADMIN)));
-			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&5/" + cmdValue + " help all &8- "
-					+ responseLanguage.getMessage(PMessages.HELP_DESCRIPTION_ALL)));
+			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&',
+					"&5/" + cmdValue + " help all &8- " + responseLanguage.getMessage(PMessages.HELP_DESCRIPTION_ALL)));
 			commandSender.sendMessage("\n");
 			return;
 		}
@@ -153,17 +153,14 @@ public enum PCommand implements Command {
 
 			Language language = plugin.getLanguageManager().getLanguage(args[1]);
 			if (language == null) {
-				player.sendMessage(Utils.color(
-						responseLanguage.getMessage(PMessages.LANGUAGE_NOT_FOUND).replace("%cmd%", cmdValue)));
+				player.sendMessage(Utils
+						.color(responseLanguage.getMessage(PMessages.LANGUAGE_NOT_FOUND).replace("%cmd%", cmdValue)));
 				return;
 			}
 
 			PPlayer basePlayer = plugin.getPlayerManager().get(player.getUniqueId());
-			if (basePlayer == null) {
-
-			} else {
-
-			}
+			if (basePlayer == null)
+				basePlayer = plugin.newPlayer(player);
 
 			basePlayer.setLanguage(language);
 			basePlayer.sendMessage(PMessages.LANGUAGE_CHANGED);
@@ -187,8 +184,8 @@ public enum PCommand implements Command {
 			Language responseLanguage = (commandSender instanceof Player)
 					? plugin.getLanguage(((Player) commandSender).getUniqueId())
 					: plugin.getLanguageManager().getDefault();
-			
-		commandSender.sendMessage(responseLanguage.getMessage(PMessages.RELOAD));
+
+			commandSender.sendMessage(responseLanguage.getMessage(PMessages.RELOAD));
 		}
 
 		@Override

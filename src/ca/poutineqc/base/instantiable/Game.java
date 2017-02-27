@@ -3,7 +3,7 @@ package ca.poutineqc.base.instantiable;
 import java.security.InvalidParameterException;
 import java.util.List;
 
-public abstract class Game<T extends PPlayer, S extends PArena> implements Playable<T> {
+public abstract class Game<T extends PPlayer, S extends Arena> implements Playable<T> {
 	
 	S arena;
 	List<T> players;
@@ -26,6 +26,10 @@ public abstract class Game<T extends PPlayer, S extends PArena> implements Playa
 		return players.contains(player);
 	}
 	
+	/**
+	 * 
+	 * @return the Arena of the game
+	 */
 	public S getArena () {
 		return arena;
 	}

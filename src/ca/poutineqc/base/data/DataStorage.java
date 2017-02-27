@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import ca.poutineqc.base.data.values.PUUID;
+import ca.poutineqc.base.data.values.SValue;
 import ca.poutineqc.base.instantiable.Savable;
 import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.utils.Pair;
@@ -43,7 +45,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setString(Pair<SavableParameter, UUID> identification, SavableParameter parameter, String value);
+	void setString(SavableParameter identification, PUUID uuid, SavableParameter parameter, String value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -64,7 +66,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setInt(Pair<SavableParameter, UUID> identification, SavableParameter parameter, int value);
+	void setInt(SavableParameter identification, PUUID uuid, SavableParameter parameter, int value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -85,7 +87,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setDouble(Pair<SavableParameter, UUID> identification, SavableParameter parameter, double value);
+	void setDouble(SavableParameter identification, PUUID uuid, SavableParameter parameter, double value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -106,7 +108,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setLong(Pair<SavableParameter, UUID> identification, SavableParameter parameter, long value);
+	void setLong(SavableParameter identification, PUUID uuid, SavableParameter parameter, long value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -127,7 +129,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setBoolean(Pair<SavableParameter, UUID> identification, SavableParameter parameter, boolean value);
+	void setBoolean(SavableParameter identification, PUUID uuid, SavableParameter parameter, boolean value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -148,7 +150,9 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setFloat(Pair<SavableParameter, UUID> identification, SavableParameter parameter, float value);
+	void setFloat(SavableParameter identification, PUUID uuid, SavableParameter parameter, float value);
+
+	void set(SavableParameter identifier, PUUID uuid, SavableParameter parameter, SValue value);
 
 	/**
 	 * Returns a list of all the identifications in the DataStorage. The
@@ -182,8 +186,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void newInstance(Pair<SavableParameter, UUID> identification,
-			List<Pair<SavableParameter, String>> createParameters);
+	void newInstance(SavableParameter identification, PUUID uuid, List<Pair<SavableParameter, SValue>> createParameters);
 
 	/**
 	 * Returns all the data requested in the parameters parameter's List from
@@ -204,23 +207,8 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	Map<SavableParameter, String> getIndividualData(Pair<SavableParameter, UUID> identification,
+	Map<SavableParameter, String> getIndividualData(SavableParameter parameter, PUUID uuid,
 			Collection<SavableParameter> parameters);
-
-	/**
-	 * Creates the table in the database if it does not exist. The columns of
-	 * the to-be-created table are in the list of SavableParameter and it's
-	 * primary key is the parameter identification.
-	 * 
-	 * @param identification
-	 *            - the SavableParameter value that represents the primary key
-	 *            of the table
-	 * @param parameters
-	 *            - a list of Parameters that represent the Columns that will
-	 *            constitute the to-be-created table
-	 * @see SavableParameter
-	 */
-	void createTableIfNotExists(SavableParameter identification, Collection<SavableParameter> parameters);
 
 	/**
 	 * Sets multiple values at once in the Database. The changes are made to the
@@ -242,7 +230,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setValues(Pair<SavableParameter, UUID> identification, List<Pair<SavableParameter, String>> entries)
+	void setValues(SavableParameter identification, PUUID uuid, List<Pair<SavableParameter, String>> entries)
 			throws InvalidParameterException;
 
 }

@@ -7,8 +7,19 @@ import org.bukkit.command.CommandSender;
 import ca.poutineqc.base.lang.Message;
 import ca.poutineqc.base.plugin.PPlugin;
 
+/**
+ * A Command is something that can be executed by players
+ * @author Sébastien Chagnon
+ *
+ */
 public interface Command {
 
+	/**
+	 * Represents the different type of commands that can be used.
+	 * 
+	 * @author Sébastien Chagnon
+	 *
+	 */
 	public enum CommandType {
 		GENERAL, SETUP, ADMIN, PLAYER,
 	}

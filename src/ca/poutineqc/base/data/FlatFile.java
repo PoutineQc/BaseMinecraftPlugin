@@ -10,6 +10,8 @@ import java.util.UUID;
 
 import org.bukkit.configuration.ConfigurationSection;
 
+import ca.poutineqc.base.data.values.PUUID;
+import ca.poutineqc.base.data.values.SValue;
 import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.PYAMLFile;
@@ -67,90 +69,72 @@ public class FlatFile implements DataStorage {
 	}
 
 	@Override
-	public void createTableIfNotExists(SavableParameter identification, Collection<SavableParameter> parameters) {
-		// Does nothing
+	public void newInstance(SavableParameter identification, PUUID uuid, List<Pair<SavableParameter, SValue>> createParameters) {
+		for (Pair<SavableParameter, SValue> entry : createParameters)
+			set(identification, uuid, entry.getKey(), entry.getValue());
 	}
 
 	@Override
-	public void newInstance(Pair<SavableParameter, UUID> identification,
-			List<Pair<SavableParameter, String>> createParameters) {
-		for (Pair<SavableParameter, String> entry : createParameters)
-			setString(identification, entry.getKey(), entry.getValue());
-	}
-
-	@Override
-	public Map<SavableParameter, String> getIndividualData(Pair<SavableParameter, UUID> identification,
+	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, PUUID uuid,
 			Collection<SavableParameter> parameters) {
 
 		Map<SavableParameter, String> user = new HashMap<SavableParameter, String>();
 
-		ConfigurationSection cs = file.getConfigurationSection(identification.getValue().toString());
+		ConfigurationSection cs = file.getConfigurationSection(uuid.toSString());
 
 		for (SavableParameter parameter : parameters) {
-
-			switch (parameter.getType()) {
-			case BOOLEAN:
-				user.put(parameter, String.valueOf(cs.getBoolean(parameter.getKey())));
-				break;
-			case DOUBLE:
-			case FLOAT:
-				user.put(parameter, String.valueOf(cs.getDouble(parameter.getKey())));
-				break;
-			case INTEGER:
-				user.put(parameter, String.valueOf(cs.getInt(parameter.getKey())));
-				break;
-			case LONG:
-				user.put(parameter, String.valueOf(cs.getLong(parameter.getKey())));
-				break;
-			case STRING:
-				user.put(parameter, cs.getString(parameter.getKey()));
-				break;
-
-			}
+			user.put(parameter, cs.getString(parameter.getKey()));
 		}
 
 		return user;
 	}
 	
 	@Override
-	public void setString(Pair<SavableParameter, UUID> identification, SavableParameter parameter, String value) {
-		file.set(identification.getValue().toString() + "." + parameter.getKey(), value);
+	public void setString(SavableParameter identification, PUUID uuid, SavableParameter parameter, String value) {
+		file.set(uuid.toSString() + "." + parameter.getKey(), value);
 		file.save();
 	}
 
 	@Override
-	public void setInt(Pair<SavableParameter, UUID> identification, SavableParameter parameter, int value) {
-		file.set(identification.getValue().toString() + "." + parameter.getKey(), value);
+	public void setInt(SavableParameter identification, PUUID uuid, SavableParameter parameter, int value) {
+		file.set(uuid.toSString() + "." + parameter.getKey(), value);
 		file.save();
 	}
 
 	@Override
-	public void setDouble(Pair<SavableParameter, UUID> identification, SavableParameter parameter, double value) {
-		file.set(identification.getValue().toString() + "." + parameter.getKey(), value);
+	public void setDouble(SavableParameter identification, PUUID uuid, SavableParameter parameter, double value) {
+		file.set(uuid.toSString() + "." + parameter.getKey(), value);
 		file.save();
 	}
 
 	@Override
-	public void setLong(Pair<SavableParameter, UUID> identification, SavableParameter parameter, long value) {
-		file.set(identification.getValue().toString() + "." + parameter.getKey(), value);
+	public void setLong(SavableParameter identification, PUUID uuid, SavableParameter parameter, long value) {
+		file.set(uuid.toSString() + "." + parameter.getKey(), value);
 		file.save();
 	}
 
 	@Override
-	public void setBoolean(Pair<SavableParameter, UUID> identification, SavableParameter parameter, boolean value) {
-		file.set(identification.getValue().toString() + "." + parameter.getKey(), value);
+	public void setBoolean(SavableParameter identification, PUUID uuid, SavableParameter parameter, boolean value) {
+		file.set(uuid.toSString() + "." + parameter.getKey(), value);
 		file.save();
 	}
 
 	@Override
-	public void setFloat(Pair<SavableParameter, UUID> identification, SavableParameter parameter, float value) {
-		file.set(identification.getValue().toString() + "." + parameter.getKey(), value);
+	public void setFloat(SavableParameter identification, PUUID uuid, SavableParameter parameter, float value) {
+		file.set(uuid.toSString() + "." + parameter.getKey(), value);
 		file.save();
 	}
 
 	@Override
-	public void setValues(Pair<SavableParameter, UUID> identification, List<Pair<SavableParameter, String>> entries)
+	public void setValues(SavableParameter identification, PUUID uuid, List<Pair<SavableParameter, String>> entries)
 			throws InvalidParameterException {
 		throw new InvalidParameterException("A flat file can't write multiple values at once");
+	}
+
+
+	@Override
+	public void set(SavableParameter identifier, PUUID uuid, SavableParameter parameter, SValue value) {
+		file.set(uuid.toSString() + "." + parameter.getKey(), value.toSString());
+		
 	}
 }

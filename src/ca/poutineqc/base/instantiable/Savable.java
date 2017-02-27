@@ -38,6 +38,6 @@ public interface Savable {
 	 * @return a list of all the SavableParameter from a Savable object
 	 * @see SavableParameter
 	 */
-	List<SavableParameter> getBaseParameters();
+	List<SavableParameter> getParameters();
 
 }
