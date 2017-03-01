@@ -1,24 +1,45 @@
 package ca.poutineqc.base.data.values;
 
-public class SString implements SValue {
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.google.gson.JsonObject;
+
+public class SString implements UniversalSavableValue {
+
+	private static final String PRIMAL_KEY = "value";
+	private static final String LENGTH_KEY = "length";
+	private int exponent;
+	
 	private String value;
 
-	private BinaryValue bv;
-
-	public SString(String value, BinaryValue bv) {
-		if (value.length() > bv.getValue())
+	public SString(String value, PowerOfTwo pt) {
+		if (value.length() > pt.getPower())
 			throw new OutOfMemoryError("The String does not fit in the required space");
 
-		this.bv = bv;
-		this.value = unpad(value);
+		this.exponent = pt.getExponent();
+		this.value = StringSavableValue.unpad(value);
+	}
+
+	public SString(ConfigurationSection cs) throws IllegalArgumentException {
+		exponent = cs.getInt(LENGTH_KEY);
+		this.value = cs.getString(PRIMAL_KEY);
+		
+		if (value.length() > PowerOfTwo.getPower(exponent));
+			throw new OutOfMemoryError("The String does not fit in the required space");
+
+	}
+
+	public SString(JsonObject json) {
+		this.exponent = json.get(LENGTH_KEY).getAsInt();
+		this.value = json.get(PRIMAL_KEY).getAsString();
 	}
 
 	public void setString(String value) throws IllegalArgumentException {
-		if (value.length() > bv.getValue())
+		if (value.length() > PowerOfTwo.getPower(exponent))
 			throw new OutOfMemoryError("The String does not fit in the required space");
 
-		this.value = unpad(value);
+		this.value = StringSavableValue.unpad(value);
 	}
 
 	@Override
@@ -27,7 +48,7 @@ public class SString implements SValue {
 	}
 
 	@Override
-	public boolean isSame(SValue o) {
+	public boolean isSame(UniversalSavableValue o) {
 		return toSString().equals(o.toSString());
 	}
 
@@ -38,6 +59,22 @@ public class SString implements SValue {
 
 	@Override
 	public int getMaxToStringLength() {
-		return bv.getValue();
+		return PowerOfTwo.getPower(exponent);
+	}
+
+	@Override
+	public ConfigurationSection toConfigurationSection() {
+		ConfigurationSection cs = new YamlConfiguration();
+		cs.set(LENGTH_KEY, exponent);
+		cs.set(PRIMAL_KEY, value);
+		return cs;
+	}
+
+	@Override
+	public JsonObject toJsonObject() {
+		JsonObject json = new JsonObject();
+		json.addProperty(PRIMAL_KEY, value);
+		json.addProperty(LENGTH_KEY, exponent);
+		return json;
 	}
 }

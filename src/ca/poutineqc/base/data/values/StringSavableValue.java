@@ -2,7 +2,7 @@ package ca.poutineqc.base.data.values;
 
 import ca.poutineqc.base.utils.Utils;
 
-public interface SValue {
+public interface StringSavableValue {
 
 	static final char PAD_CHAR = '·';
 	
@@ -18,11 +18,12 @@ public interface SValue {
 		return Utils.padLeft(toPad, getMaxToStringLength()).replace(' ', PAD_CHAR);
 	}
 	
-	default String unpad(String toUnpad) {
+	static String unpad(String toUnpad) {
 		return (toUnpad.replace(PAD_CHAR, ' ')).trim();
 	}
 
-	default boolean isSame(SValue o) {
+	default boolean isSame(UniversalSavableValue o) {
 		return toSString().equals(o.toSString());
 	}
+
 }

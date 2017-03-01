@@ -4,22 +4,40 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 
-import ca.poutineqc.base.data.values.SLong;
-import ca.poutineqc.base.data.values.SValue;
+import com.google.gson.JsonObject;
 
-public class ColorManager implements SValue {
+import ca.poutineqc.base.data.values.SLong;
+import ca.poutineqc.base.data.values.UniversalSavableValue;
+
+public class ColorManager implements UniversalSavableValue {
+	private static final String PRIMAL_KEY = "value";
 
 	public static final int MAX_STRING_LENGTH = SLong.MAX_STRING_LENGTH;
 
 	private SLong colorIndice;
-	private List<ItemStackManager> allBlocks;
-	private List<ItemStackManager> onlyChoosenBlocks;
+	private List<SItem> allBlocks;
+	private List<SItem> onlyChoosenBlocks;
 
 	public ColorManager(String value) {
 		this.colorIndice = new SLong(value);
 		updateLists();
+	}
+
+	public ColorManager(long value) {
+		this.colorIndice = new SLong(value);
+		updateLists();
+	}
+
+	public ColorManager(ConfigurationSection cs) {
+		this(cs.getLong(PRIMAL_KEY));
+	}
+
+	public ColorManager(JsonObject json) {
+		this(json.get(PRIMAL_KEY).getAsLong());
 	}
 
 	public void setColorIndice(long value) {
@@ -28,16 +46,16 @@ public class ColorManager implements SValue {
 	}
 
 	public void updateLists() {
-		allBlocks = new ArrayList<ItemStackManager>();
-		onlyChoosenBlocks = new ArrayList<ItemStackManager>();
+		allBlocks = new ArrayList<SItem>();
+		onlyChoosenBlocks = new ArrayList<SItem>();
 		long tempColorIndice = colorIndice.getLong();
 
 		for (int i = 31; i >= 0; i--) {
-			ItemStackManager icon;
+			SItem icon;
 			if (i >= 16)
-				icon = new ItemStackManager(Material.STAINED_CLAY);
+				icon = new SItem(Material.STAINED_CLAY);
 			else
-				icon = new ItemStackManager(Material.WOOL);
+				icon = new SItem(Material.WOOL);
 
 			icon.setData((short) (i % 16));
 
@@ -55,15 +73,15 @@ public class ColorManager implements SValue {
 			onlyChoosenBlocks = allBlocks;
 	}
 
-	public ItemStackManager getRandomAvailableBlock() {
+	public SItem getRandomAvailableBlock() {
 		return onlyChoosenBlocks.get((int) Math.floor(Math.random() * onlyChoosenBlocks.size()));
 	}
 
-	public List<ItemStackManager> getAllBlocks() {
+	public List<SItem> getAllBlocks() {
 		return allBlocks;
 	}
 
-	public List<ItemStackManager> getOnlyChoosenBlocks() {
+	public List<SItem> getOnlyChoosenBlocks() {
 		return onlyChoosenBlocks;
 	}
 
@@ -73,12 +91,25 @@ public class ColorManager implements SValue {
 
 	@Override
 	public String toSString() {
-		// TODO Auto-generated method stub
-		return null;
+		return colorIndice.toSString();
 	}
 
 	@Override
 	public int getMaxToStringLength() {
 		return MAX_STRING_LENGTH;
+	}
+
+	@Override
+	public ConfigurationSection toConfigurationSection() {
+		ConfigurationSection cs = new YamlConfiguration();
+		cs.set(PRIMAL_KEY, colorIndice.getLong());
+		return cs;
+	}
+
+	@Override
+	public JsonObject toJsonObject() {
+		JsonObject json = new JsonObject();
+		json.addProperty(PRIMAL_KEY, colorIndice.getLong());
+		return json;
 	}
 }

@@ -1,45 +1,42 @@
 package ca.poutineqc.base.data.values;
 
+import java.util.UUID;
+
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.google.gson.JsonObject;
 
-public class SBoolean implements UniversalSavableValue {
+public class SUUID implements UniversalSavableValue {
 
-	public static final int MAX_STRING_LENGTH = 1;
+	public static final int MAX_STRING_LENGTH = 36;
 	private static final String PRIMAL_KEY = "value";
 
-	private Boolean value;
-
-	public SBoolean(boolean value) {
+	UUID value;
+	
+	public SUUID(UUID value) {
 		this.value = value;
 	}
-
-	public SBoolean(String value) {
-		this.value = value.equals("1");
+	
+	public SUUID(String value) {
+		this.value = UUID.fromString(StringSavableValue.unpad(value));
+	}
+	
+	public SUUID(ConfigurationSection cs) {
+		this.value = UUID.fromString(cs.getString(PRIMAL_KEY));
 	}
 
-	public SBoolean(ConfigurationSection cs) {
-		this.value = cs.getBoolean(PRIMAL_KEY);
+	public SUUID(JsonObject json) {
+		this.value = UUID.fromString(json.get(PRIMAL_KEY).getAsString());
 	}
 
-	public SBoolean(JsonObject json) {
-		this.value = json.get(PRIMAL_KEY).getAsBoolean();
-	}
-
-	@Override
-	public String toString() {
-		return String.valueOf(value);
-	}
-
-	public boolean getBoolean() {
+	public UUID getUUID() {
 		return value;
 	}
 
 	@Override
 	public String toSString() {
-		return value ? "1" : "0";
+		return pad(this.value.toString());
 	}
 
 	@Override
@@ -57,7 +54,7 @@ public class SBoolean implements UniversalSavableValue {
 	@Override
 	public JsonObject toJsonObject() {
 		JsonObject json = new JsonObject();
-		json.addProperty(PRIMAL_KEY, value);
+		json.addProperty(PRIMAL_KEY, value.toString());
 		return json;
 	}
 

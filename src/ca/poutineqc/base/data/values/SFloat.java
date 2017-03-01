@@ -1,8 +1,14 @@
 package ca.poutineqc.base.data.values;
 
-public class SFloat implements SValue {
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
+
+import com.google.gson.JsonObject;
+
+public class SFloat implements UniversalSavableValue {
 
 	public static final int MAX_STRING_LENGTH = 8;
+	private static final String PRIMAL_KEY = "value";
 
 	private Float value;
 
@@ -11,7 +17,15 @@ public class SFloat implements SValue {
 	}
 
 	public SFloat(String value) {
-		this.value = Float.intBitsToFloat(Integer.parseUnsignedInt(unpad(value), 16));
+		this.value = Float.intBitsToFloat(Integer.parseUnsignedInt(StringSavableValue.unpad(value), 16));
+	}
+
+	public SFloat(ConfigurationSection cs) {
+		this.value = (float) cs.getDouble(PRIMAL_KEY);
+	}
+
+	public SFloat(JsonObject json) {
+		this.value = json.get(PRIMAL_KEY).getAsFloat();
 	}
 
 	@Override
@@ -35,6 +49,20 @@ public class SFloat implements SValue {
 
 	public void setFloat(float value) {
 		this.value = value;	
+	}
+
+	@Override
+	public ConfigurationSection toConfigurationSection() {
+		ConfigurationSection cs = new YamlConfiguration();
+		cs.set(PRIMAL_KEY, value);
+		return cs;
+	}
+
+	@Override
+	public JsonObject toJsonObject() {
+		JsonObject json = new JsonObject();
+		json.addProperty(PRIMAL_KEY, value);
+		return json;
 	}
 
 }

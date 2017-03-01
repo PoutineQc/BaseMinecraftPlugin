@@ -1,140 +1,85 @@
 package ca.poutineqc.base.data;
 
-import java.security.InvalidParameterException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.Bukkit;
 
-import ca.poutineqc.base.data.values.PUUID;
-import ca.poutineqc.base.data.values.SValue;
-import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.plugin.PPlugin;
-import ca.poutineqc.base.utils.PYAMLFile;
-import ca.poutineqc.base.utils.Pair;
 
-/**
- * A FlatFile that is used to store data on. It can read or write Data. It
- * implements DataStorage.
- * 
- * @author Sébastien Chagnon
- * @see DataStorage
- */
-public class FlatFile implements DataStorage {
-	
-	// =========================================================================
-	// Fields
-	// =========================================================================
+public abstract class FlatFile implements DataStorage {
 
-	private PYAMLFile file;
+	protected File file;
 
-	
-	// =========================================================================
-	// Constructor(s)
-	// =========================================================================
-
-	/**
-	 * Default constructor.
-	 * 
-	 * @param plugin
-	 *            - the main class of the plugin
-	 * @param fileName
-	 *            - the file name to be used for the creation of the file with
-	 *            the PYAMLFile
-	 * @param folders
-	 *            - the folders in which the file should be stored
-	 * @see PPlugin
-	 */
-	public FlatFile(PPlugin plugin, String fileName, String... folders) {
-		file = new PYAMLFile(fileName, false, folders);
+	public FlatFile(PPlugin plugin, String fileName, boolean buildIn, String[] folders) {
+		this.file = getFile(plugin, fileName, buildIn, folders);
 	}
 
-
-	// =========================================================================
-	// Data Accessors
-	// =========================================================================
-
-	@Override
-	public List<UUID> getAllIdentifications(SavableParameter identification) {
-		List<UUID> identifications = new ArrayList<UUID>();
-
-		for (String key : file.getKeys(false))
-			identifications.add(UUID.fromString(key));
-
-		return identifications;
+	public String getFileName() {
+		return file.getName();
 	}
 
-	@Override
-	public void newInstance(SavableParameter identification, PUUID uuid, List<Pair<SavableParameter, SValue>> createParameters) {
-		for (Pair<SavableParameter, SValue> entry : createParameters)
-			set(identification, uuid, entry.getKey(), entry.getValue());
+	public boolean isLoaded() {
+		return file.exists();
 	}
 
-	@Override
-	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, PUUID uuid,
-			Collection<SavableParameter> parameters) {
+	public static File getFile(PPlugin plugin, String fileName, boolean buildIn, String[] folders) {
+		String completeFileName = fileName.replace(".yml", "") + ".yml";
+		File folder = getFolder(plugin, folders);
+		File file = new File(folder, completeFileName);
 
-		Map<SavableParameter, String> user = new HashMap<SavableParameter, String>();
+		if (file.exists())
+			return file;
 
-		ConfigurationSection cs = file.getConfigurationSection(uuid.toSString());
-
-		for (SavableParameter parameter : parameters) {
-			user.put(parameter, cs.getString(parameter.getKey()));
+		if (buildIn) {
+			InputStream local = plugin.get().getResource(getFolderPath(folders) + completeFileName);
+			if (local != null) {
+				plugin.get().saveResource(getFolderPath(folders) + completeFileName, false);
+			} else {
+				plugin.get().getLogger().severe("Could not find " + completeFileName);
+				plugin.get().getLogger().severe("Contact the developper as fast as possible as this should not happend.");
+				Bukkit.getServer().getLogger().severe("Disabling " + plugin.getName() + "...");
+				plugin.get().getPluginLoader().disablePlugin(plugin.get());
+			}
+		} else {
+			try {
+				file.createNewFile();
+				return null;
+			} catch (IOException e) {
+				Bukkit.getServer().getLogger().severe("Could not create " + completeFileName);
+				Bukkit.getServer().getLogger().severe("Review your minecraft server's permissions"
+						+ " to write and edit files in it's plugin directory");
+				Bukkit.getServer().getLogger().severe("Disabling " + plugin.getName() + "...");
+				plugin.get().getPluginLoader().disablePlugin(plugin.get());
+			}
 		}
 
-		return user;
-	}
-	
-	@Override
-	public void setString(SavableParameter identification, PUUID uuid, SavableParameter parameter, String value) {
-		file.set(uuid.toSString() + "." + parameter.getKey(), value);
-		file.save();
+		return file;
 	}
 
-	@Override
-	public void setInt(SavableParameter identification, PUUID uuid, SavableParameter parameter, int value) {
-		file.set(uuid.toSString() + "." + parameter.getKey(), value);
-		file.save();
+	private static File getFolder(PPlugin plugin, String... folderName2) {
+
+		File folder = new File(".");
+		for (String folderName : folderName2) {
+			folder = new File(folder, folderName);
+			if (!folder.exists())
+				folder.mkdir();
+		}
+
+		return folder;
 	}
 
-	@Override
-	public void setDouble(SavableParameter identification, PUUID uuid, SavableParameter parameter, double value) {
-		file.set(uuid.toSString() + "." + parameter.getKey(), value);
-		file.save();
-	}
+	private static String getFolderPath(String... folders) {
 
-	@Override
-	public void setLong(SavableParameter identification, PUUID uuid, SavableParameter parameter, long value) {
-		file.set(uuid.toSString() + "." + parameter.getKey(), value);
-		file.save();
-	}
+		StringBuilder path = new StringBuilder();
+		for (String folderName : folders) {
+			path.append(folderName);
+			path.append("/");
+		}
 
-	@Override
-	public void setBoolean(SavableParameter identification, PUUID uuid, SavableParameter parameter, boolean value) {
-		file.set(uuid.toSString() + "." + parameter.getKey(), value);
-		file.save();
-	}
-
-	@Override
-	public void setFloat(SavableParameter identification, PUUID uuid, SavableParameter parameter, float value) {
-		file.set(uuid.toSString() + "." + parameter.getKey(), value);
-		file.save();
-	}
-
-	@Override
-	public void setValues(SavableParameter identification, PUUID uuid, List<Pair<SavableParameter, String>> entries)
-			throws InvalidParameterException {
-		throw new InvalidParameterException("A flat file can't write multiple values at once");
+		return path.toString();
 	}
 
 
-	@Override
-	public void set(SavableParameter identifier, PUUID uuid, SavableParameter parameter, SValue value) {
-		file.set(uuid.toSString() + "." + parameter.getKey(), value.toSString());
-		
-	}
 }

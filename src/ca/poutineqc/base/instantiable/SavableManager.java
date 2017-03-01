@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import ca.poutineqc.base.data.values.SUUID;
+
 /**
  * A manager that contains an array of Object that extend the interface Savable.
  * From this manager, it is possible to add or remove items, and get them based
@@ -16,7 +18,7 @@ import java.util.UUID;
 public abstract class SavableManager<T extends Savable> {
 
 	private List<T> instances;
-	private Collection<UUID> savedInstances;
+	private Collection<SUUID> savedInstances;
 
 	/**
 	 * Creates an empty manager.
@@ -112,10 +114,14 @@ public abstract class SavableManager<T extends Savable> {
 		return instances.remove(instance);
 	}
 
-	abstract Collection<UUID> getAllSavedUUIDs();
+	abstract public Collection<SUUID> getAllSavedUUIDs();
 
 	public boolean isSaved(UUID uuid) {
-		return savedInstances.contains(uuid);
+		for (SUUID id : savedInstances)
+			if (id.getUUID().compareTo(uuid) == 0)
+				return true;
+		
+		return false;
 	}
 
 }

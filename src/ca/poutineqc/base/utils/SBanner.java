@@ -10,8 +10,10 @@ import org.bukkit.block.banner.PatternType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
 
+import com.google.gson.JsonObject;
 
-public class ItemBannerManager extends ItemStackManager {
+
+public class SBanner extends SItem {
 	private DyeColor baseColor;
 	private List<Pattern> patterns = new ArrayList<Pattern>();
 
@@ -46,11 +48,11 @@ public class ItemBannerManager extends ItemStackManager {
 		}
 	}
 
-	public ItemBannerManager() {
+	public SBanner() {
 		super(Material.BANNER);
 	}
 
-	public ItemBannerManager(ItemStack itemStack) {
+	public SBanner(ItemStack itemStack) {
 		super(itemStack);
 
 		BannerMeta meta = (BannerMeta) itemStack.getItemMeta();
@@ -58,14 +60,18 @@ public class ItemBannerManager extends ItemStackManager {
 		patterns = meta.getPatterns();
 	}
 
-	public ItemBannerManager(CustomPattern pattern) {
+	public SBanner(CustomPattern pattern) {
 		this(pattern, DyeColor.BLACK);
 	}
 
-	public ItemBannerManager(CustomPattern pattern, DyeColor dyeColor) {
+	public SBanner(CustomPattern pattern, DyeColor dyeColor) {
 		super(Material.BANNER);
 		durability = 0;
 		setPattern(pattern, dyeColor);
+	}
+
+	public SBanner(JsonObject json) {
+		super(json);
 	}
 
 	@Override
@@ -80,9 +86,11 @@ public class ItemBannerManager extends ItemStackManager {
 	}
 
 	@Override
-	public boolean isSame(ItemStack itemStack) {
-		if (!super.isSame(itemStack))
+	public boolean equals(Object o) {
+		if (!super.equals(o))
 			return false;
+		
+		ItemStack itemStack = (ItemStack) o;
 
 		BannerMeta meta = (BannerMeta) itemStack.getItemMeta();
 		if (meta.getBaseColor() != baseColor)

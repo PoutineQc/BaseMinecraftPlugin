@@ -15,6 +15,10 @@ public class CommandManager {
 	public CommandManager() {
 		this.commands = new ArrayList<Command>();
 	}
+
+	public void addCommand(PCommand command) {
+		commands.add(command);
+	}
 	
 	public void addCommands(Collection<Command> commands) {
 		commands.addAll(commands);

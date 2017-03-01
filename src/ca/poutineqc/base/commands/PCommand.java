@@ -12,6 +12,7 @@ import ca.poutineqc.base.instantiable.PPlayer;
 import ca.poutineqc.base.lang.PMessages;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.Message;
+import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Utils;
 
@@ -22,7 +23,7 @@ public enum PCommand implements Command {
 		public void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args,
 				Object... extra) {
 
-			Language responseLanguage = plugin.getLanguage(commandSender);
+			Language responseLanguage = Library.instance().getLanguage(commandSender);
 
 			String header = Utils.color("&8&m" + StringUtils.repeat(" ", 15) + "&r&8| " + plugin.getPrimaryColor()
 					+ plugin.getName() + " " + plugin.getSecondaryColor()
@@ -142,25 +143,27 @@ public enum PCommand implements Command {
 			}
 
 			Player player = (Player) commandSender;
-			Language responseLanguage = plugin.getLanguage(player.getUniqueId());
+			Language responseLanguage = Library.instance().getLanguage(player.getUniqueId());
 
 			if (args.length == 1) {
-				player.sendMessage(Utils.color(plugin.getPrimaryColor() + PMessages.LANGUAGE_LIST));
-				for (Entry<String, Language> language : plugin.getLanguageManager().getLanguages().entrySet())
+				player.sendMessage(Utils.color(plugin.getPrimaryColor() + responseLanguage.getMessage(PMessages.LANGUAGE_LIST)));
+				for (Entry<String, Language> language : Library.instance().getLanguageManager().entrySet())
 					player.sendMessage(plugin.getSecondaryColor() + "- " + language.getValue().getLanguageName());
 				return;
 			}
 
-			Language language = plugin.getLanguageManager().getLanguage(args[1]);
+			Language language = Library.instance().getLanguageManager().getLanguage(args[1]);
 			if (language == null) {
 				player.sendMessage(Utils
 						.color(responseLanguage.getMessage(PMessages.LANGUAGE_NOT_FOUND).replace("%cmd%", cmdValue)));
 				return;
 			}
 
-			PPlayer basePlayer = plugin.getPlayerManager().get(player.getUniqueId());
-			if (basePlayer == null)
-				basePlayer = plugin.newPlayer(player);
+			PPlayer basePlayer = Library.instance().getPPlayer(player.getUniqueId());
+			if (basePlayer == null) {
+				basePlayer = new PPlayer(Library.instance(), player.getUniqueId());
+				Library.instance().getPlayerManager().add(basePlayer);
+			}
 
 			basePlayer.setLanguage(language);
 			basePlayer.sendMessage(PMessages.LANGUAGE_CHANGED);
@@ -169,7 +172,7 @@ public enum PCommand implements Command {
 		@Override
 		public void complete(List<String> tabCompletion, String[] args) {
 			if (args.length == 2)
-				for (Entry<String, Language> lang : PPlugin.get().getLanguageManager().getLanguages().entrySet())
+				for (Entry<String, Language> lang : Library.instance().getLanguageManager().entrySet())
 					if (lang.getValue().getLanguageName().toLowerCase().startsWith(args[1].toLowerCase()))
 						tabCompletion.add(lang.getValue().getLanguageName());
 		}
@@ -179,11 +182,12 @@ public enum PCommand implements Command {
 		@Override
 		public void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args,
 				Object... extra) {
+			
 			plugin.reload();
 
 			Language responseLanguage = (commandSender instanceof Player)
-					? plugin.getLanguage(((Player) commandSender).getUniqueId())
-					: plugin.getLanguageManager().getDefault();
+					? Library.instance().getLanguage(((Player) commandSender).getUniqueId())
+					: Library.instance().getLanguageManager().getDefault();
 
 			commandSender.sendMessage(responseLanguage.getMessage(PMessages.RELOAD));
 		}
@@ -203,7 +207,7 @@ public enum PCommand implements Command {
 	private PCommand(String cmdChoice, Message helpMessage, String permission, String usage, CommandType type) {
 		this.cmdChoice = cmdChoice;
 		this.usage = usage;
-		this.permission = permission.replace("%plugin%", PPlugin.get().getName().toLowerCase());
+		this.permission = permission.replace("%plugin%", Library.instance().getName().toLowerCase());
 		this.helpMessage = helpMessage;
 		this.type = type;
 	}
@@ -241,7 +245,6 @@ public enum PCommand implements Command {
 		return helpMessage;
 	}
 
-	@Override
 	public abstract void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args,
 			Object... extra);
 

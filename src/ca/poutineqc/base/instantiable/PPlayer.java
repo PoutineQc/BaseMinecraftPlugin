@@ -10,17 +10,18 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import ca.poutineqc.base.data.DataStorage;
-import ca.poutineqc.base.data.FlatFile;
+import ca.poutineqc.base.data.JSON;
+import ca.poutineqc.base.data.YAML;
 import ca.poutineqc.base.data.MySQL;
 import ca.poutineqc.base.data.SQLite;
-import ca.poutineqc.base.data.values.PUUID;
-import ca.poutineqc.base.data.values.SValue;
+import ca.poutineqc.base.data.values.SUUID;
+import ca.poutineqc.base.data.values.UniversalSavableValue;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.Message;
-import ca.poutineqc.base.plugin.PPlugin;
+import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.utils.Pair;
 
-public abstract class PPlayer implements Savable {
+public class PPlayer implements Savable {
 
 	// =========================================================================
 	// Static Fields
@@ -39,9 +40,9 @@ public abstract class PPlayer implements Savable {
 	 * 
 	 * @param plugin
 	 *            the main class of the plugin
-	 * @see PPlugin
+	 * @see Library
 	 */
-	public static void checkDataStorage(PPlugin plugin) {
+	public static void checkDataStorage(Library plugin) {
 		if (data == null) {
 			data = openDataStorage(plugin);
 		}
@@ -56,9 +57,9 @@ public abstract class PPlayer implements Savable {
 	 *            the main class of the plugin
 	 * @return a list of all the different identifications saved in the
 	 *         DataStorage
-	 * @see PPlugin
+	 * @see Library
 	 */
-	public static List<UUID> getAllIdentifications(PPlugin plugin) {
+	public static List<SUUID> getAllIdentifications(Library plugin) {
 		checkDataStorage(plugin);
 		return data.getAllIdentifications(Data.UUID);
 	}
@@ -71,9 +72,9 @@ public abstract class PPlayer implements Savable {
 	 *            the main class of the plugin
 	 * @return an instance of a DataStorage
 	 * @see DataStorage
-	 * @see PPlugin
+	 * @see Library
 	 */
-	public static DataStorage openDataStorage(PPlugin plugin) {
+	public static DataStorage openDataStorage(Library plugin) {
 
 		switch (plugin.getConfig().getString("dataStorage").toLowerCase()) {
 		case "mysql":
@@ -81,9 +82,14 @@ public abstract class PPlayer implements Savable {
 			data = new MySQL(plugin, TABLE_NAME);
 
 			break;
-		case "flatfiles":
+		case "json":
 
-			data = new FlatFile(plugin, TABLE_NAME.toLowerCase());
+			data = new JSON(plugin, TABLE_NAME.toLowerCase(), false);
+
+			break;
+		case "yaml":
+
+			data = new YAML(plugin, TABLE_NAME.toLowerCase(), false);
 
 			break;
 		case "sqlite":
@@ -101,7 +107,7 @@ public abstract class PPlayer implements Savable {
 	// Fields
 	// =========================================================================
 
-	private final PUUID uuid;
+	private final SUUID uuid;
 
 	private OfflinePlayer player;
 	private Language language;
@@ -118,19 +124,19 @@ public abstract class PPlayer implements Savable {
 	 *            the main class of the plugin
 	 * @param uuid
 	 *            the UUID of the player
-	 * @see PPlugin
+	 * @see Library
 	 * @see UUID
 	 */
-	public PPlayer(PPlugin plugin, UUID uuid) {
+	public PPlayer(Library plugin, UUID uuid) {
 
 		checkDataStorage(plugin);
 
-		this.uuid = new PUUID(uuid);
+		this.uuid = new SUUID(uuid);
 		this.player = Bukkit.getOfflinePlayer(uuid);
 
 		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, getParameters());
-		
-		this.language = plugin.getLanguageManager().getLanguage(parameters.get(Data.LANGUAGE));
+
+		this.language = plugin.getLanguageManager().getLanguage(Language.getKey(parameters.get(Data.LANGUAGE)));
 
 	}
 
@@ -142,21 +148,21 @@ public abstract class PPlayer implements Savable {
 	 *            the main class of the plugin
 	 * @param player
 	 *            the player which this instance is created for.
-	 * @see PPlugin
+	 * @see Library
 	 * @see Player
 	 */
-	public PPlayer(PPlugin plugin, Player player) {
+	public PPlayer(Library plugin, Player player) {
 
 		checkDataStorage(plugin);
 
-		this.uuid = new PUUID(player.getUniqueId());
+		this.uuid = new SUUID(player.getUniqueId());
 		this.player = player;
 		this.language = plugin.getLanguageManager().getDefault();
 
-		List<Pair<SavableParameter, SValue>> toSave = new ArrayList<Pair<SavableParameter, SValue>>();
-		toSave.add(new Pair<SavableParameter, SValue>(Data.UUID, this.uuid));
-		toSave.add(new Pair<SavableParameter, SValue>(Data.LANGUAGE, this.language));
-		
+		List<Pair<SavableParameter, UniversalSavableValue>> toSave = new ArrayList<Pair<SavableParameter, UniversalSavableValue>>();
+		toSave.add(new Pair<SavableParameter, UniversalSavableValue>(Data.UUID, this.uuid));
+		toSave.add(new Pair<SavableParameter, UniversalSavableValue>(Data.LANGUAGE, this.language));
+
 		data.newInstance(Data.UUID, uuid, toSave);
 	}
 
@@ -225,9 +231,9 @@ public abstract class PPlayer implements Savable {
 	 * @see SavableParameter
 	 */
 	private enum Data implements SavableParameter {
-		UUID("uuid", ""),
+		UUID("uuid", "511837cf-ff1b-41ff-a64a-87ab1aba419c"),
 
-		LANGUAGE("language", "");
+		LANGUAGE("language", "··············en");
 
 		private String key;
 		private String defaultValue;
@@ -250,7 +256,7 @@ public abstract class PPlayer implements Savable {
 
 	public void setLanguage(Language language) {
 		this.language = language;
-		
-		data.set(Data.UUID, uuid, Data.LANGUAGE, language);
+
+		data.setStringSavableValue(Data.UUID, uuid, Data.LANGUAGE, language);
 	}
 }

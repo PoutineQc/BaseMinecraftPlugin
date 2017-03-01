@@ -3,33 +3,35 @@ package ca.poutineqc.base.lang;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 
+import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PConfigKey;
 import ca.poutineqc.base.plugin.PPlugin;
 
-public abstract class LanguagesManager {
+public abstract class LanguagesManager extends HashMap<String, Language> {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8876668613284932805L;
 
 	public String[] builtIn;
 
 	private String defaultLanguage;
-	private Map<String, Language> languages;
 
-	public abstract Collection<Message> getAdditionnalMessages();
+	public abstract Collection<Message> getMessages();
 
 	public LanguagesManager(PPlugin plugin, String[] builtIn) {
 		this.builtIn = builtIn;
 
-		languages = new HashMap<String, Language>();
 		for (String fileName : builtIn)
-			languages.put(fileName, new Language(plugin, fileName, true, PMessages.PREFIX));
+			this.put(fileName, new Language(plugin, fileName, true, PMessages.PREFIX));
 
 		defaultLanguage = plugin.getConfig().getString(PConfigKey.LANGUAGE.getKey(), builtIn[0]);
 		if (!isLanguage(defaultLanguage)) {
 			Language temp = new Language(plugin, defaultLanguage, false, PMessages.PREFIX);
 			if (temp.yamlFile.isLoaded())
-				languages.put(defaultLanguage, temp);
+				this.put(defaultLanguage, temp);
 		}
 
 		Collection<Message> messages = new ArrayList<Message>();
@@ -37,14 +39,14 @@ public abstract class LanguagesManager {
 		for (Message message : PMessages.values())
 			messages.add(message);
 
-		messages.addAll(getAdditionnalMessages());
+		messages.addAll(getMessages());
 
-		for (Entry<String, Language> entry : languages.entrySet())
+		for (Entry<String, Language> entry : this.entrySet())
 			entry.getValue().addMessages(messages);
 	}
 
 	public boolean isLanguage(String fileName) {
-		for (String fn : languages.keySet())
+		for (String fn : this.keySet())
 			if (fn.equals(fileName))
 				return true;
 
@@ -52,11 +54,11 @@ public abstract class LanguagesManager {
 	}
 
 	public Language getLanguage(String name) {
-		for (String fn : languages.keySet())
+		for (String fn : this.keySet())
 			if (fn.equals(name))
-				return languages.get(fn);
+				return this.get(fn);
 
-		for (Entry<String, Language> language : languages.entrySet())
+		for (Entry<String, Language> language : this.entrySet())
 			if (language.getValue().getLanguageName().equalsIgnoreCase(name))
 				return language.getValue();
 			
@@ -64,23 +66,23 @@ public abstract class LanguagesManager {
 	}
 
 	public Language getDefault() {
-		for (String fn : languages.keySet())
+		for (String fn : this.keySet())
 			if (fn.equals(defaultLanguage))
-				return languages.get(fn);
+				return this.get(fn);
 
 		return getMain();
 	}
 
 	public Language getMain() {
-		for (String fn : languages.keySet())
+		for (String fn : this.keySet())
 			if (fn.equals(builtIn[0]))
-				return languages.get(fn);
+				return this.get(fn);
 
 		return null;
 	}
 
-	public Map<String, Language> getLanguages() {
-		return languages;
+	public void append(LanguagesManager languageManager) {
+		
 	}
 
 }

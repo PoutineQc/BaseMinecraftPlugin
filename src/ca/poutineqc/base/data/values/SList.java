@@ -3,32 +3,40 @@ package ca.poutineqc.base.data.values;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class SList<T extends SValue> extends ArrayList<T> implements SValue {
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
+public abstract class SList<T extends UniversalSavableValue> extends ArrayList<T>
+		implements StringSavableValue, JSONSavableValue {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 7789926118136433637L;
 
-	private BinaryValue bv;
+	private static final String LENGTH_KEY = "length";
+	private static final String PRIMAL_KEY = "values";
 
-	public SList(List<T> values, BinaryValue bv) throws OutOfMemoryError {
+	private int exponent;
+
+	public SList(List<T> values, PowerOfTwo pt) throws OutOfMemoryError {
 		super(values);
 
-		if (bv.getValue() < values.size())
+		if (pt.getPower() < values.size())
 			throw new OutOfMemoryError("The size of the list provided is too large for the size of the SList");
 
-		this.bv = bv;
+		this.exponent = pt.getExponent();
 
 		if (getMaxToStringLength() > 21844)
 			throw new OutOfMemoryError("The SList cannot hold that much information.");
 
 	}
 
-	public SList(String values, BinaryValue bv) throws OutOfMemoryError {
-		super(bv.getValue());
+	public SList(String values, PowerOfTwo pt) throws OutOfMemoryError {
+		super(pt.getPower());
 
-		this.bv = bv;
+		this.exponent = pt.getExponent();
 
 		if (getMaxToStringLength() > 21844)
 			throw new OutOfMemoryError("The SList cannot hold that much information.");
@@ -36,19 +44,27 @@ public abstract class SList<T extends SValue> extends ArrayList<T> implements SV
 		deserialize(values);
 	}
 
-	public SList(BinaryValue bv) throws OutOfMemoryError {
+	public SList(PowerOfTwo pt) throws OutOfMemoryError {
 
-		this.bv = bv;
+		this.exponent = pt.getExponent();
 
 		if (getMaxToStringLength() > 21844)
 			throw new OutOfMemoryError("The SList cannot hold that much information.");
 	}
 
+	public SList(JsonObject json) {
+		this.exponent = json.get(LENGTH_KEY).getAsInt();
+		JsonArray array = json.get(PRIMAL_KEY).getAsJsonArray();
+		for (JsonElement element : array) {
+			this.add(convert(element.getAsJsonObject()));
+		}
+	}
+
 	@Override
 	public boolean contains(Object o) {
-		if (o instanceof SValue)
-			for (SValue value : this)
-				if (value.isSame((SValue) o))
+		if (o instanceof UniversalSavableValue)
+			for (UniversalSavableValue value : this)
+				if (value.isSame((UniversalSavableValue) o))
 					return true;
 
 		return false;
@@ -56,7 +72,7 @@ public abstract class SList<T extends SValue> extends ArrayList<T> implements SV
 
 	@Override
 	public boolean add(T e) throws OutOfMemoryError {
-		if (this.size() >= bv.getValue())
+		if (this.size() >= PowerOfTwo.getPower(exponent))
 			throw new OutOfMemoryError("The SList is full. It can't hold more Data.");
 
 		if (this.contains(e))
@@ -67,9 +83,9 @@ public abstract class SList<T extends SValue> extends ArrayList<T> implements SV
 
 	@Override
 	public boolean remove(Object o) {
-		if (o instanceof SValue)
-			for (SValue value : this)
-				if (value.isSame((SValue) o)) {
+		if (o instanceof UniversalSavableValue)
+			for (UniversalSavableValue value : this)
+				if (value.isSame((UniversalSavableValue) o)) {
 					this.remove(value);
 					return true;
 				}
@@ -85,7 +101,7 @@ public abstract class SList<T extends SValue> extends ArrayList<T> implements SV
 	private String serialize() {
 		StringBuilder sb = new StringBuilder();
 
-		for (SValue value : this)
+		for (UniversalSavableValue value : this)
 			sb.append(value.toSString());
 
 		return sb.toString();
@@ -94,7 +110,7 @@ public abstract class SList<T extends SValue> extends ArrayList<T> implements SV
 	private void deserialize(String values) throws OutOfMemoryError {
 
 		int amountToDeserialize = values.length() / getElementMaxStringLength();
-		if (amountToDeserialize > bv.getValue())
+		if (amountToDeserialize > PowerOfTwo.getPower(exponent))
 			throw new OutOfMemoryError(
 					"The amount of elements in the String provided is too large for the size of the SList");
 
@@ -106,10 +122,25 @@ public abstract class SList<T extends SValue> extends ArrayList<T> implements SV
 
 	@Override
 	public int getMaxToStringLength() {
-		return bv.getValue() * getElementMaxStringLength();
+		return PowerOfTwo.getPower(exponent) * getElementMaxStringLength();
+	}
+
+	@Override
+	public JsonObject toJsonObject() {
+		JsonObject json = new JsonObject();
+		
+		JsonArray array = new JsonArray();
+		for (T element : this)
+			array.add(element.toJsonObject());
+
+		json.addProperty(LENGTH_KEY, exponent);
+		json.add(PRIMAL_KEY, array);
+		
+		return json;
 	}
 
 	public abstract T convert(String value);
+	public abstract T convert(JsonObject value);
 
 	public abstract int getElementMaxStringLength();
 }

@@ -5,16 +5,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-import ca.poutineqc.base.data.values.SValue;
+import com.google.gson.JsonObject;
+
+import ca.poutineqc.base.data.YAML;
+import ca.poutineqc.base.data.values.StringSavableValue;
+import ca.poutineqc.base.data.values.UniversalSavableValue;
 import ca.poutineqc.base.plugin.PConfigKey;
 import ca.poutineqc.base.plugin.PPlugin;
-import ca.poutineqc.base.utils.PYAMLFile;
+import ca.poutineqc.base.plugin.Library;
 
-public class Language implements SValue {
+public class Language extends HashMap<Message, String> implements UniversalSavableValue {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5172580943430082727L;
+	
 	public static final int MAX_STRING_LENGTH = 16;
+	private static final String PRIMAL_KEY = "value";
 
 	public static final String FOLDER_NAME = "languageFiles";
 
@@ -26,34 +38,32 @@ public class Language implements SValue {
 		Language.secondary = secondary;
 	};
 
-	PYAMLFile yamlFile;
+	YAML yamlFile;
 	private boolean prefixBeforeEveryMessage;
-	private Map<Message, String> messages;
 	private Message prefix;
 
 	public Language(PPlugin plugin, String fileName, boolean builtIn, Message prefix) {
-		messages = new HashMap<Message, String>();
 		prefixBeforeEveryMessage = plugin.getConfig().getBoolean(PConfigKey.PREFIX.getKey(), true);
 
 		this.prefix = prefix;
-		yamlFile = new PYAMLFile(fileName, builtIn, FOLDER_NAME);
+		yamlFile = new YAML(plugin, fileName, builtIn, FOLDER_NAME);
 	}
 
 	public void sendMessage(Player player, Message message) {
 		if (prefixBeforeEveryMessage)
-			player.sendMessage(getMessage(prefix).replace("%plugin%", PPlugin.get().getName()) + " " + getMessage(message));
+			player.sendMessage(getMessage(prefix).replace("%plugin%", Library.instance().getName()) + " " + getMessage(message));
 		else
 			player.sendMessage(getMessage(message));
 	}
 
 	public String getMessage(Message message) {
-		return ChatColor.translateAlternateColorCodes('&', messages.get(message)
+		return ChatColor.translateAlternateColorCodes('&', this.get(message)
 				.replaceAll("%p%", "&" + primary.getChar()).replaceAll("%s%", "&" + secondary.getChar()));
 	}
 
 	public void addMessages(Collection<Message> messages) {
 		for (Message message : messages)
-			this.messages.put(message, yamlFile.getString(message.getKey(), message.getDefaultMessage()));
+			this.put(message, yamlFile.getYAML().getString(message.getKey(), message.getDefaultMessage()));
 	}
 
 	public String getLanguageName() {
@@ -62,11 +72,37 @@ public class Language implements SValue {
 
 	@Override
 	public String toSString() {
-		return pad(yamlFile.getName().replace(".yml", ""));
+		return pad(yamlFile.getFileName().replace(".yml", ""));
 	}
 
 	@Override
 	public int getMaxToStringLength() {
 		return MAX_STRING_LENGTH;
+	}
+
+	public static String getKey(String value) {
+		return StringSavableValue.unpad(value);
+	}
+
+	public static String getKey(ConfigurationSection cs) {
+		return cs.getString(PRIMAL_KEY);
+	}
+
+	@Override
+	public ConfigurationSection toConfigurationSection() {
+		ConfigurationSection cs = new YamlConfiguration();
+		cs.set(PRIMAL_KEY, yamlFile.getFileName().replace(".yml", ""));
+		return cs;
+	}
+
+	public static String getKey(JsonObject json) {
+		return json.get(PRIMAL_KEY).getAsString();
+	}
+
+	@Override
+	public JsonObject toJsonObject() {
+		JsonObject json = new JsonObject();
+		json.addProperty(PRIMAL_KEY, yamlFile.getFileName().replace(".yml", ""));
+		return json;
 	}
 }

@@ -1,6 +1,5 @@
 package ca.poutineqc.base.data;
 
-import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,14 +9,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
-import ca.poutineqc.base.data.values.PUUID;
-import ca.poutineqc.base.data.values.SValue;
+import ca.poutineqc.base.data.values.SUUID;
+import ca.poutineqc.base.data.values.StringSavableValue;
+import ca.poutineqc.base.data.values.UniversalSavableValue;
 import ca.poutineqc.base.instantiable.SavableParameter;
-import ca.poutineqc.base.plugin.PPlugin;
+import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.utils.Pair;
 
 /**
@@ -48,7 +47,7 @@ public abstract class Database implements DataStorage {
 
 	protected static Connection connection;
 
-	protected PPlugin plugin;
+	protected Library plugin;
 
 	private String tableName;
 
@@ -63,9 +62,9 @@ public abstract class Database implements DataStorage {
 	 *            - the main class of the plugin
 	 * @param table
 	 *            - the name of the table handled by this Database
-	 * @see PPlugin
+	 * @see Library
 	 */
-	public Database(PPlugin plugin, String tableName) {
+	public Database(Library plugin, String tableName) {
 
 		this.plugin = plugin;
 		this.tableName = plugin.getConfig().getString("tablePrefix") + tableName;
@@ -158,8 +157,8 @@ public abstract class Database implements DataStorage {
 	// Query Builders
 	// =========================================================================
 
-	private String getCreateTableQuery(SavableParameter identification, PUUID uuid,
-			List<Pair<SavableParameter, SValue>> parameters) {
+	private String getCreateTableQuery(SavableParameter identification, SUUID uuid,
+			List<Pair<SavableParameter, UniversalSavableValue>> parameters) {
 		StringBuilder builder = new StringBuilder("CREATE TABLE IF NOT EXISTS ");
 
 		builder.append(tableName);
@@ -167,7 +166,7 @@ public abstract class Database implements DataStorage {
 
 		builder.append(identification.getKey() + " VARCHAR(" + uuid.getMaxToStringLength() + ") NOT NULL,");
 
-		for (Pair<SavableParameter, SValue> parameter : parameters) {
+		for (Pair<SavableParameter, UniversalSavableValue> parameter : parameters) {
 			builder.append(parameter.getKey().getKey() + " VARCHAR(" + parameter.getValue().getMaxToStringLength()
 					+ ") DEFAULT '" + parameter.getKey().getDefaultValue() + "'");
 			builder.append(", ");
@@ -179,8 +178,8 @@ public abstract class Database implements DataStorage {
 		return builder.toString();
 	}
 
-	private String getNewInstanceQuery(SavableParameter identification, PUUID uuid,
-			List<Pair<SavableParameter, SValue>> createParameters) {
+	private String getNewInstanceQuery(SavableParameter identification, SUUID uuid,
+			List<Pair<SavableParameter, UniversalSavableValue>> createParameters) {
 		StringBuilder sb = new StringBuilder("INSERT INTO ");
 
 		sb.append(tableName);
@@ -209,53 +208,53 @@ public abstract class Database implements DataStorage {
 		return sb.toString();
 	}
 
-	private String getMultipleUpdateQuery(SavableParameter identification, PUUID uuid,
-			List<Pair<SavableParameter, String>> entries) {
-		StringBuilder sb = new StringBuilder("UPDATE ");
-
-		sb.append(tableName);
-		sb.append(" SET ");
-
-		for (Pair<SavableParameter, String> entry : entries) {
-			sb.append(entry.getKey().getKey());
-			sb.append("='");
-			sb.append(entry.getValue());
-			sb.append("'");
-			sb.append(", ");
-		}
-
-		sb.replace(sb.length() - 2, sb.length() - 1, "");
-		sb.append(" WHERE ");
-
-		sb.append(identification.getKey());
-		sb.append("=");
-		sb.append(uuid.toSString());
-		sb.append(";");
-
-		return sb.toString();
-	}
+//	private String getMultipleUpdateQuery(SavableParameter identification, SUUID uuid,
+//			List<Pair<SavableParameter, String>> entries) {
+//		StringBuilder sb = new StringBuilder("UPDATE ");
+//
+//		sb.append(tableName);
+//		sb.append(" SET ");
+//
+//		for (Pair<SavableParameter, String> entry : entries) {
+//			sb.append(entry.getKey().getKey());
+//			sb.append("='");
+//			sb.append(entry.getValue());
+//			sb.append("'");
+//			sb.append(", ");
+//		}
+//
+//		sb.replace(sb.length() - 2, sb.length() - 1, "");
+//		sb.append(" WHERE ");
+//
+//		sb.append(identification.getKey());
+//		sb.append("=");
+//		sb.append(uuid.toSString());
+//		sb.append(";");
+//
+//		return sb.toString();
+//	}
 
 	// =========================================================================
 	// Database Accessors
 	// =========================================================================
 
 	@Override
-	public void newInstance(SavableParameter identification, PUUID uuid,
-			List<Pair<SavableParameter, SValue>> createParameters) {
+	public void newInstance(SavableParameter identification, SUUID uuid,
+			List<Pair<SavableParameter, UniversalSavableValue>> createParameters) {
 		update(getCreateTableQuery(identification, uuid, createParameters));
 		update(getNewInstanceQuery(identification, uuid, createParameters));
 	}
 
 	@Override
-	public List<UUID> getAllIdentifications(SavableParameter identification) {
-		List<UUID> identifications = new ArrayList<UUID>();
+	public List<SUUID> getAllIdentifications(SavableParameter identification) {
+		List<SUUID> identifications = new ArrayList<SUUID>();
 
 		String query = "SELECT * FROM " + tableName;
 		ResultSet rs = query(query);
 
 		try {
 			while (rs.next()) {
-				identifications.add(UUID.fromString(rs.getString(identification.getKey())));
+				identifications.add(new SUUID(rs.getString(identification.getKey())));
 			}
 		} catch (SQLException ex) {
 			return null;
@@ -265,7 +264,7 @@ public abstract class Database implements DataStorage {
 	}
 
 	@Override
-	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, PUUID id,
+	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID id,
 			Collection<SavableParameter> parameters) {
 
 		String query = "SELECT * FROM " + tableName + " WHERE " + identification.getKey() + "='" + id.toSString()
@@ -292,49 +291,49 @@ public abstract class Database implements DataStorage {
 
 	}
 
-	@Override
-	public void setValues(SavableParameter identification, PUUID uuid, List<Pair<SavableParameter, String>> entries)
-			throws InvalidParameterException {
-		update(getMultipleUpdateQuery(identification, uuid, entries));
-	}
+//	@Override
+//	public void setValues(SavableParameter identification, SUUID uuid, List<Pair<SavableParameter, String>> entries)
+//			throws InvalidParameterException {
+//		update(getMultipleUpdateQuery(identification, uuid, entries));
+//	}
 
 	@Override
-	public void setString(SavableParameter identification, PUUID uuid, SavableParameter parameter, String value) {
+	public void setString(SavableParameter identification, SUUID uuid, SavableParameter parameter, String value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setInt(SavableParameter identification, PUUID uuid, SavableParameter parameter, int value) {
+	public void setInt(SavableParameter identification, SUUID uuid, SavableParameter parameter, int value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setDouble(SavableParameter identification, PUUID uuid, SavableParameter parameter, double value) {
+	public void setDouble(SavableParameter identification, SUUID uuid, SavableParameter parameter, double value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setLong(SavableParameter identification, PUUID uuid, SavableParameter parameter, long value) {
+	public void setLong(SavableParameter identification, SUUID uuid, SavableParameter parameter, long value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setBoolean(SavableParameter identification, PUUID uuid, SavableParameter parameter, boolean value) {
+	public void setBoolean(SavableParameter identification, SUUID uuid, SavableParameter parameter, boolean value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setFloat(SavableParameter identification, PUUID uuid, SavableParameter parameter, float value) {
+	public void setFloat(SavableParameter identification, SUUID uuid, SavableParameter parameter, float value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
-	private <T> void setValue(SavableParameter identification, PUUID uuid, SavableParameter parameter, T value) {
+	private <T> void setValue(SavableParameter identification, SUUID uuid, SavableParameter parameter, T value) {
 		update("UPDATE " + tableName + " SET `" + parameter.getKey() + "`='" + value.toString() + "' WHERE "
 				+ identification.getKey() + "='" + uuid.toSString() + "';");
 	}
 
 	@Override
-	public void set(SavableParameter identifier, PUUID uuid, SavableParameter parameter, SValue value) {
+	public void setStringSavableValue(SavableParameter identifier, SUUID uuid, SavableParameter parameter, StringSavableValue value) {
 		update("UPDATE " + tableName + " SET `" + parameter.getKey() + "`='" + value.toSString() + "' WHERE "
 				+ identifier.getKey() + "='" + uuid.toSString() + "';");
 	}
