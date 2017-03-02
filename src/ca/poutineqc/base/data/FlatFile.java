@@ -3,9 +3,11 @@ package ca.poutineqc.base.data;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 
+import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.plugin.PPlugin;
 
 public abstract class FlatFile implements DataStorage {
@@ -25,7 +27,7 @@ public abstract class FlatFile implements DataStorage {
 	}
 
 	public static File getFile(PPlugin plugin, String fileName, boolean buildIn, String[] folders) {
-		String completeFileName = fileName.replace(".yml", "") + ".yml";
+		String completeFileName = fileName;
 		File folder = getFolder(plugin, folders);
 		File file = new File(folder, completeFileName);
 
@@ -45,7 +47,7 @@ public abstract class FlatFile implements DataStorage {
 		} else {
 			try {
 				file.createNewFile();
-				return null;
+				return file;
 			} catch (IOException e) {
 				Bukkit.getServer().getLogger().severe("Could not create " + completeFileName);
 				Bukkit.getServer().getLogger().severe("Review your minecraft server's permissions"
@@ -60,7 +62,7 @@ public abstract class FlatFile implements DataStorage {
 
 	private static File getFolder(PPlugin plugin, String... folderName2) {
 
-		File folder = new File(".");
+		File folder = plugin.get().getDataFolder();
 		for (String folderName : folderName2) {
 			folder = new File(folder, folderName);
 			if (!folder.exists())
@@ -79,6 +81,11 @@ public abstract class FlatFile implements DataStorage {
 		}
 
 		return path.toString();
+	}
+
+	@Override
+	public void createTable(List<SavableParameter> createParameters) {
+		// Does nothing
 	}
 
 

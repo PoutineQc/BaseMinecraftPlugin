@@ -62,6 +62,8 @@ public class SItem implements JSONSavableValue {
 	}
 
 	public SItem(JsonObject json) {
+		json.get(MATERIAL_NAME);
+		json.get(MATERIAL_NAME).getAsString();
 		material = Material.getMaterial(json.get(MATERIAL_NAME).getAsString());
 		amount = json.get(AMOUNT).getAsByte();
 		durability = json.get(DURABILITY).getAsShort();
@@ -223,7 +225,7 @@ public class SItem implements JSONSavableValue {
 		for (Entry<Enchantment, Integer> enchantment : this.enchantments.entrySet()) {
 			JsonObject element = new JsonObject();
 			System.out.println(enchantment.getKey());
-			element.addProperty(ENCHANTMENTS_NAME, enchantment.getKey().toString());
+			element.addProperty(ENCHANTMENTS_NAME, enchantment.getKey().getName());
 			element.addProperty(ENCHANTMENTS_VALUE, enchantment.getValue());
 			enchantments.add(element);
 		}

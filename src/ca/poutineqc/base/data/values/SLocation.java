@@ -48,9 +48,9 @@ public class SLocation extends Location implements UniversalSavableValue {
 			throw new IllegalArgumentException("The String passed does not represent a Location.");
 
 		int i = 0;
-		int j = PowerOfTwo.POWER_64.getPower();
+		int j = SUUID.MAX_STRING_LENGTH;
 		this.worldUUID = new SUUID(value.substring(i, j));
-		this.setWorld(Bukkit.getWorld(UUID.fromString(worldUUID.toString())));
+		this.setWorld(Bukkit.getWorld(UUID.fromString(worldUUID.getUUID().toString())));
 
 		i = j;
 		j += SDouble.MAX_STRING_LENGTH;
@@ -92,7 +92,9 @@ public class SLocation extends Location implements UniversalSavableValue {
 		StringBuilder sb = new StringBuilder();
 
 		try {
-			worldUUID = new SUUID(this.getWorld().getUID());
+			if (this.getWorld() != null)
+				worldUUID = new SUUID(this.getWorld().getUID());
+			
 			x.setDouble(this.getX());
 			y.setDouble(this.getY());
 			z.setDouble(this.getZ());

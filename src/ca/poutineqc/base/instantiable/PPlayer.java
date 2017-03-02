@@ -1,6 +1,7 @@
 package ca.poutineqc.base.instantiable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -11,17 +12,17 @@ import org.bukkit.entity.Player;
 
 import ca.poutineqc.base.data.DataStorage;
 import ca.poutineqc.base.data.JSON;
-import ca.poutineqc.base.data.YAML;
 import ca.poutineqc.base.data.MySQL;
 import ca.poutineqc.base.data.SQLite;
+import ca.poutineqc.base.data.YAML;
 import ca.poutineqc.base.data.values.SUUID;
-import ca.poutineqc.base.data.values.UniversalSavableValue;
+import ca.poutineqc.base.data.values.StringSavableValue;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.Message;
 import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.utils.Pair;
 
-public class PPlayer implements Savable {
+public final class PPlayer implements Savable {
 
 	// =========================================================================
 	// Static Fields
@@ -43,9 +44,10 @@ public class PPlayer implements Savable {
 	 * @see Library
 	 */
 	public static void checkDataStorage(Library plugin) {
-		if (data == null) {
+		if (data == null)
 			data = openDataStorage(plugin);
-		}
+		
+		data.createTable(new ArrayList<SavableParameter>(Arrays.asList(Data.values())));
 	}
 
 	/**
@@ -88,6 +90,7 @@ public class PPlayer implements Savable {
 
 			break;
 		case "yaml":
+		case "yml":
 
 			data = new YAML(plugin, TABLE_NAME.toLowerCase(), false);
 
@@ -136,7 +139,7 @@ public class PPlayer implements Savable {
 
 		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, getParameters());
 
-		this.language = plugin.getLanguageManager().getLanguage(Language.getKey(parameters.get(Data.LANGUAGE)));
+		this.language = plugin.getLanguages().getLanguage(Language.getKey(parameters.get(Data.LANGUAGE)));
 
 	}
 
@@ -157,11 +160,10 @@ public class PPlayer implements Savable {
 
 		this.uuid = new SUUID(player.getUniqueId());
 		this.player = player;
-		this.language = plugin.getLanguageManager().getDefault();
+		this.language = plugin.getLanguages().getDefault();
 
-		List<Pair<SavableParameter, UniversalSavableValue>> toSave = new ArrayList<Pair<SavableParameter, UniversalSavableValue>>();
-		toSave.add(new Pair<SavableParameter, UniversalSavableValue>(Data.UUID, this.uuid));
-		toSave.add(new Pair<SavableParameter, UniversalSavableValue>(Data.LANGUAGE, this.language));
+		List<Pair<SavableParameter, StringSavableValue>> toSave = new ArrayList<Pair<SavableParameter, StringSavableValue>>();
+		toSave.add(new Pair<SavableParameter, StringSavableValue>(Data.LANGUAGE, this.language));
 
 		data.newInstance(Data.UUID, uuid, toSave);
 	}

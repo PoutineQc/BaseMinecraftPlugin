@@ -7,6 +7,7 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 
 import ca.poutineqc.base.commands.Command.CommandType;
+import ca.poutineqc.base.plugin.PPlugin;
 
 public class CommandManager {
 
@@ -32,11 +33,11 @@ public class CommandManager {
 		return null;
 	}
 
-	public List<Command> getRequiredCommands(CommandSender commandSender, CommandType commandType) {
+	public List<Command> getRequiredCommands(PPlugin plugin, CommandSender commandSender, CommandType commandType) {
 		List<Command> commands = new ArrayList<Command>();
 		
 		for (Command command : this.commands) {
-			if (command.isOfType(commandType) && command.hasPermission(commandSender))
+			if (command.isOfType(commandType) && command.hasPermission(plugin, commandSender))
 				commands.add(command);
 		}
 		

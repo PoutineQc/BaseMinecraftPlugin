@@ -1,6 +1,7 @@
 package ca.poutineqc.base.instantiable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -12,19 +13,20 @@ import com.google.gson.JsonObject;
 
 import ca.poutineqc.base.data.DataStorage;
 import ca.poutineqc.base.data.JSON;
-import ca.poutineqc.base.data.YAML;
 import ca.poutineqc.base.data.MySQL;
 import ca.poutineqc.base.data.SQLite;
-import ca.poutineqc.base.data.values.PowerOfTwo;
-import ca.poutineqc.base.data.values.SLocation;
-import ca.poutineqc.base.data.values.SUUID;
+import ca.poutineqc.base.data.YAML;
 import ca.poutineqc.base.data.values.SInteger;
 import ca.poutineqc.base.data.values.SList;
+import ca.poutineqc.base.data.values.SLocation;
 import ca.poutineqc.base.data.values.SString;
-import ca.poutineqc.base.data.values.UniversalSavableValue;
+import ca.poutineqc.base.data.values.SUUID;
+import ca.poutineqc.base.data.values.StringSavableValue;
 import ca.poutineqc.base.plugin.Library;
+import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.ColorManager;
 import ca.poutineqc.base.utils.Pair;
+import ca.poutineqc.base.utils.PowerOfTwo;
 
 /**
  * A base class for an Arena. An arena is a zone where players may play games
@@ -57,9 +59,11 @@ public class Arena implements Savable {
 	 *            the main class of the plugin
 	 * @see Library
 	 */
-	public static void checkDataStorage(Library plugin) {
+	public static void checkDataStorage(PPlugin plugin) {
 		if (data == null) {
 			data = openDataStorage(plugin);
+
+			data.createTable(new ArrayList<SavableParameter>(Arrays.asList(Data.values())));
 		}
 	}
 
@@ -76,6 +80,7 @@ public class Arena implements Savable {
 	 */
 	public static List<SUUID> getAllIdentifications(Library plugin) {
 		checkDataStorage(plugin);
+
 		return data.getAllIdentifications(Data.UUID);
 	}
 
@@ -89,7 +94,7 @@ public class Arena implements Savable {
 	 * @see DataStorage
 	 * @see Library
 	 */
-	public static DataStorage openDataStorage(Library plugin) {
+	public static DataStorage openDataStorage(PPlugin plugin) {
 
 		switch (plugin.getConfig().getString("dataStorage").toLowerCase()) {
 		case "mysql":
@@ -103,6 +108,7 @@ public class Arena implements Savable {
 
 			break;
 		case "yaml":
+		case "yml":
 
 			data = new YAML(plugin, TABLE_NAME.toLowerCase(), false);
 
@@ -151,7 +157,7 @@ public class Arena implements Savable {
 	 *            the UUID of the new PArena
 	 * @see UUID
 	 */
-	public Arena(Library plugin, UUID uuid) {
+	public Arena(PPlugin plugin, UUID uuid) {
 
 		checkDataStorage(plugin);
 
@@ -236,13 +242,18 @@ public class Arena implements Savable {
 		this.maxPlayer = new SInteger(Data.MAX_PLAYER.getDefaultValue());
 
 		this.colorManager = new ColorManager(Data.COLOR_INDICE.getDefaultValue());
-		
-		
-		List<Pair<SavableParameter, UniversalSavableValue>> createParameters = new ArrayList<Pair<SavableParameter, UniversalSavableValue>>();
-		createParameters.add(new Pair<SavableParameter, UniversalSavableValue>(Data.UUID, this.uuid));
-		createParameters.add(new Pair<SavableParameter, UniversalSavableValue>(Data.NAME, this.name));
-		createParameters.add(new Pair<SavableParameter, UniversalSavableValue>(Data.HIGHEST_SCORE, this.highestScore));
-		createParameters.add(new Pair<SavableParameter, UniversalSavableValue>(Data.HIGHEST_PLAYER, this.highestPlayer));
+
+		List<Pair<SavableParameter, StringSavableValue>> createParameters = new ArrayList<Pair<SavableParameter, StringSavableValue>>();
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.NAME, this.name));
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.MIN_POINT_X, this.minPoint));
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.MAX_POINT_X, this.maxPoint));
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.LOBBY_X, this.lobby));
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.START_X, this.start));
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.HIGHEST_SCORE, this.highestScore));
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.HIGHEST_PLAYER, this.highestPlayer));
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.MIN_PLAYER, this.minPlayer));
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.MAX_PLAYER, this.maxPlayer));
+		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.COLOR_INDICE, this.colorManager));
 		data.newInstance(Data.UUID, uuid, createParameters);
 
 	}
@@ -379,15 +390,35 @@ public class Arena implements Savable {
 
 		NAME("name", "·······················arenaName"),
 
-		MIN_POINT_X("minPoint", "00000000-0000-0000-0000-000000000000···············0···············0···············0···············0···············0"),
+		MIN_POINT_X("minPoint",
+				"00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"),
 
-		MAX_POINT_X("maxPoint", "00000000-0000-0000-0000-000000000000···············0···············0···············0···············0···············0"),
+		MAX_POINT_X("maxPoint",
+				"00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"),
 
-		LOBBY_X("lobby", "00000000-0000-0000-0000-000000000000···············0···············0···············0···············0···············0"),
+		LOBBY_X("lobby",
+				"00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"),
 
-		SPECTATE("spectate", "00000000-0000-0000-0000-000000000000···············0···············0···············0···············0···············0"),
+		SPECTATE("spectate",
+				"00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"),
 
-		START_X("start", ""),
+		START_X("start",
+			         	  "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"
+						+ "00000000-0000-0000-0000-000000000000···············0···············0···············0·······0·······0"),
 
 		HIGHEST_SCORE("highestScore", "·······0"),
 

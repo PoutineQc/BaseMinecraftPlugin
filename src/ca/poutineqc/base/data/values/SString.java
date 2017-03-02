@@ -5,6 +5,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.google.gson.JsonObject;
 
+import ca.poutineqc.base.utils.PowerOfTwo;
+
 public class SString implements UniversalSavableValue {
 
 	private static final String PRIMAL_KEY = "value";

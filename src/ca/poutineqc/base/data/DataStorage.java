@@ -5,9 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
+
 import ca.poutineqc.base.data.values.SUUID;
 import ca.poutineqc.base.data.values.StringSavableValue;
-import ca.poutineqc.base.data.values.UniversalSavableValue;
 import ca.poutineqc.base.instantiable.Savable;
 import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.utils.Pair;
@@ -163,6 +164,7 @@ public interface DataStorage {
 	 *            - the SavableParameter that indicates which parameter
 	 *            represents the UUID column.
 	 * @return an ArrayList of all the UUIDs of the saved instances
+	 * @throws MySQLSyntaxErrorException 
 	 * @see SavableParameter
 	 * @see UUID
 	 */
@@ -186,7 +188,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void newInstance(SavableParameter identification, SUUID uuid, List<Pair<SavableParameter, UniversalSavableValue>> createParameters);
+	void newInstance(SavableParameter identification, SUUID uuid, List<Pair<SavableParameter, StringSavableValue>> createParameters);
 
 	/**
 	 * Returns all the data requested in the parameters parameter's List from
@@ -209,6 +211,9 @@ public interface DataStorage {
 	 */
 	Map<SavableParameter, String> getIndividualData(SavableParameter parameter, SUUID uuid,
 			Collection<SavableParameter> parameters);
+
+	void createTable(
+			List<SavableParameter> createParameters);
 
 	/**
 	 * Sets multiple values at once in the Database. The changes are made to the

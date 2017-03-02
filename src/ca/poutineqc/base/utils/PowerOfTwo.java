@@ -1,4 +1,4 @@
-package ca.poutineqc.base.data.values;
+package ca.poutineqc.base.utils;
 
 public enum PowerOfTwo {
 

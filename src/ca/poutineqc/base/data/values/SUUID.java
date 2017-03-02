@@ -40,6 +40,11 @@ public class SUUID implements UniversalSavableValue {
 	}
 
 	@Override
+	public String toString() {
+		return value.toString();
+	}
+
+	@Override
 	public int getMaxToStringLength() {
 		return MAX_STRING_LENGTH;
 	}

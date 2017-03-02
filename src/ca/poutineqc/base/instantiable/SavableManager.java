@@ -1,5 +1,6 @@
 package ca.poutineqc.base.instantiable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,7 +26,11 @@ public abstract class SavableManager<T extends Savable> {
 	 */
 	public SavableManager() {
 		this.instances = new LinkedList<T>();
-		this.savedInstances = getAllSavedUUIDs();
+		try {
+			this.savedInstances = getAllSavedUUIDs();
+		} catch (Exception e) {
+			this.savedInstances = new ArrayList<SUUID>();
+		}
 	}
 
 	/**
@@ -73,8 +78,8 @@ public abstract class SavableManager<T extends Savable> {
 	 * Get one of this manager's instance base on the name of the instance.
 	 *
 	 * @param name
-	 *            the string that will be compared to this manager's
-	 *            instance's names
+	 *            the string that will be compared to this manager's instance's
+	 *            names
 	 * @return the required instance if it is contained in this manager's
 	 *         instances, null if it is not
 	 * @see Savable#getName
@@ -120,8 +125,12 @@ public abstract class SavableManager<T extends Savable> {
 		for (SUUID id : savedInstances)
 			if (id.getUUID().compareTo(uuid) == 0)
 				return true;
-		
+
 		return false;
+	}
+
+	public Collection<SUUID> getSaved() {
+		return savedInstances;
 	}
 
 }

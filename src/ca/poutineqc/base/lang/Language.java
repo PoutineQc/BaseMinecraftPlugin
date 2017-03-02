@@ -2,7 +2,6 @@ package ca.poutineqc.base.lang;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
@@ -14,9 +13,9 @@ import com.google.gson.JsonObject;
 import ca.poutineqc.base.data.YAML;
 import ca.poutineqc.base.data.values.StringSavableValue;
 import ca.poutineqc.base.data.values.UniversalSavableValue;
+import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PConfigKey;
 import ca.poutineqc.base.plugin.PPlugin;
-import ca.poutineqc.base.plugin.Library;
 
 public class Language extends HashMap<Message, String> implements UniversalSavableValue {
 
@@ -24,7 +23,7 @@ public class Language extends HashMap<Message, String> implements UniversalSavab
 	 * 
 	 */
 	private static final long serialVersionUID = 5172580943430082727L;
-	
+
 	public static final int MAX_STRING_LENGTH = 16;
 	private static final String PRIMAL_KEY = "value";
 
@@ -51,14 +50,19 @@ public class Language extends HashMap<Message, String> implements UniversalSavab
 
 	public void sendMessage(Player player, Message message) {
 		if (prefixBeforeEveryMessage)
-			player.sendMessage(getMessage(prefix).replace("%plugin%", Library.instance().getName()) + " " + getMessage(message));
+			player.sendMessage(getMessage(prefix).replace("%plugin%", getMessage(message.getPrefixMessage())) + " "
+					+ getMessage(message));
 		else
 			player.sendMessage(getMessage(message));
 	}
 
 	public String getMessage(Message message) {
+		if (this.containsKey(message))
 		return ChatColor.translateAlternateColorCodes('&', this.get(message)
 				.replaceAll("%p%", "&" + primary.getChar()).replaceAll("%s%", "&" + secondary.getChar()));
+		else
+			return ChatColor.translateAlternateColorCodes('&', Library.getLanguageManager().getDefault().get(message)
+					.replaceAll("%p%", "&" + primary.getChar()).replaceAll("%s%", "&" + secondary.getChar()));
 	}
 
 	public void addMessages(Collection<Message> messages) {

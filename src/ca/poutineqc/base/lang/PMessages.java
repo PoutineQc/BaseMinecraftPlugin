@@ -59,4 +59,9 @@ public enum PMessages implements Message {
 		return defaultValue;
 	}
 
+	@Override
+	public Message getPrefixMessage() {
+		return PREFIX;
+	}
+
 }

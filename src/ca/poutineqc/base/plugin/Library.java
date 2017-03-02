@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -17,13 +18,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ca.poutineqc.base.commands.CommandManager;
 import ca.poutineqc.base.commands.PCommand;
 import ca.poutineqc.base.data.values.SUUID;
+import ca.poutineqc.base.instantiable.Arena;
 import ca.poutineqc.base.instantiable.PPlayer;
 import ca.poutineqc.base.instantiable.SavableManager;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.LanguagesManager;
+import ca.poutineqc.base.lang.Message;
+import ca.poutineqc.base.lang.PMessages;
 
-public class Library extends JavaPlugin implements Listener, PPlugin {
+public final class Library extends JavaPlugin implements Listener, PPlugin {
 
+	private static final String[] BUILT_IN = new String[] { "en", "fr" };
 	private static Library plugin;
 
 	private List<PPlugin> observers;
@@ -36,6 +41,26 @@ public class Library extends JavaPlugin implements Listener, PPlugin {
 		Library.plugin = this;
 		saveDefaultConfig();
 
+//		try {
+//			ca.poutineqc.base.Main.main(null);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+		SavableManager<Arena> arenas = new SavableManager<Arena>() {
+
+			@Override
+			public Collection<SUUID> getAllSavedUUIDs() {
+				return Arena.getAllIdentifications(plugin);
+			}
+		};
+		
+		for (SUUID a : arenas.getSaved())
+			System.out.println(a);
+		
+		arenas.add(new Arena(this, "wwdwdwd", Bukkit.getWorld("world")));
+		
+		commands = newCommandManager();
+
 		observers = new ArrayList<PPlugin>();
 	}
 
@@ -43,10 +68,10 @@ public class Library extends JavaPlugin implements Listener, PPlugin {
 	public void onDisable() {
 
 	}
-	
+
 	public static void addObserver(PPlugin observer) {
 		plugin.observers.add(observer);
-		
+
 		plugin.languages.append(observer.getLanguages());
 	}
 
@@ -54,15 +79,15 @@ public class Library extends JavaPlugin implements Listener, PPlugin {
 	public void onPlayerLoginEvent(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		UUID uuid = player.getUniqueId();
-		if (plugin.getPlayerManager().isSaved(uuid))
-			plugin.getPlayerManager().add(new PPlayer(plugin, uuid));
+		if (players.isSaved(uuid))
+			players.add(new PPlayer(plugin, uuid));
 	}
 
 	@EventHandler
 	public void onPlayerDisconnectEvent(PlayerQuitEvent event) {
 		Player player = event.getPlayer();
-		PPlayer pPlayer = plugin.getPPlayer(player.getUniqueId());
-		plugin.getPlayerManager().remove(pPlayer);
+		PPlayer pPlayer = Library.getPPlayer(player.getUniqueId());
+		players.remove(pPlayer);
 	}
 
 	public SavableManager<PPlayer> newPlayerManager() {
@@ -75,31 +100,33 @@ public class Library extends JavaPlugin implements Listener, PPlugin {
 		};
 	}
 
+	@Override
 	public Library get() {
 		return plugin;
 	}
 
-	public static Library instance() {
-		return plugin;
-	}
-
-	public LanguagesManager getLanguageManager() {
-		if (languages == null)
-			languages = newLanguageManager();
-
-		return languages;
-	}
-
 	private LanguagesManager newLanguageManager() {
-		// TODO
-		return null;
+		return new LanguagesManager(this, BUILT_IN) {
+
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -2417569037170329095L;
+
+			@Override
+			public Collection<Message> getMessages() {
+				Collection<Message> messages = new ArrayList<Message>();
+				for (Message m : PMessages.values())
+					messages.add(m);
+
+				return messages;
+			}
+		};
 	}
 
-	public CommandManager getCommandManager() {
-		if (commands == null)
-			commands = newCommandManager();
-
-		return commands;
+	@Override
+	public LanguagesManager getLanguages() {
+		return languages;
 	}
 
 	public CommandManager newCommandManager() {
@@ -112,44 +139,65 @@ public class Library extends JavaPlugin implements Listener, PPlugin {
 
 	}
 
-	public PPlayer getPPlayer(UUID uuid) {
-		return players.get(uuid);
+	@Override
+	public CommandManager getCommandManager() {
+		return commands;
 	}
 
-	public PPlayer getPPlayer(String name) {
-		return players.get(name);
-	}
-
-	public Language getLanguage(CommandSender commandSender) {
-		return (commandSender instanceof Player) ? this.getLanguage(((Player) commandSender).getUniqueId())
-				: this.getLanguageManager().getDefault();
-	}
-
-	public Language getLanguage(UUID uuid) {
-		return (this.players.isSaved(uuid)) ? this.players.get(uuid).getLanguage()
-				: this.getLanguageManager().getDefault();
-	}
-
+	@Override
 	public ChatColor getPrimaryColor() {
 		return ChatColor.GOLD;
 	}
 
+	@Override
 	public ChatColor getSecondaryColor() {
 		return ChatColor.YELLOW;
 	}
 
-	public void reload() {
-		languages = newLanguageManager();
-		reload();
-	}
+	@Override
+	public boolean reload() {
+		for (PPlugin observer : observers)
+			if (!observer.canBeReloaded())
+				return false;
 
-	public SavableManager<PPlayer> getPlayerManager() {
-		return players;
+		languages = newLanguageManager();
+
+		for (PPlugin observer : observers)
+			languages.append(observer.getLanguages());
+
+		return true;
 	}
 
 	@Override
-	public LanguagesManager getLanguages() {
-		return languages;
+	public boolean canBeReloaded() {
+		return true;
+	}
+
+	public static PPlayer newPPlayer(UUID uniqueId) {
+		PPlayer pplayer = new PPlayer(plugin, uniqueId);
+		plugin.players.add(pplayer);
+		return pplayer;
+	}
+
+	public static PPlayer getPPlayer(UUID uuid) {
+		return plugin.players.get(uuid);
+	}
+
+	public static PPlayer getPPlayer(String name) {
+		return plugin.players.get(name);
+	}
+
+	public static Language getLanguage(CommandSender commandSender) {
+		return (commandSender instanceof Player) ? Library.getLanguage(((Player) commandSender).getUniqueId())
+				: plugin.languages.getDefault();
+	}
+
+	public static Language getLanguage(UUID uuid) {
+		return (plugin.players.isSaved(uuid)) ? plugin.players.get(uuid).getLanguage() : plugin.languages.getDefault();
+	}
+
+	public static LanguagesManager getLanguageManager() {
+		return plugin.languages;
 	}
 
 }

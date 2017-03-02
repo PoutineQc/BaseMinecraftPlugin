@@ -12,7 +12,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import ca.poutineqc.base.data.values.SUUID;
 import ca.poutineqc.base.data.values.StringSavableValue;
-import ca.poutineqc.base.data.values.UniversalSavableValue;
 import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PPlugin;
@@ -50,7 +49,7 @@ public class YAML extends FlatFile {
 	 * @see Library
 	 */
 	public YAML(PPlugin plugin, String fileName, boolean buildIn, String... folderName) {
-		super(plugin, fileName, buildIn, folderName);
+		super(plugin, fileName.replace(".yml", "") + ".yml", buildIn, folderName);
 		
 		yaml = YamlConfiguration.loadConfiguration(file);
 		
@@ -72,9 +71,10 @@ public class YAML extends FlatFile {
 
 	@Override
 	public void newInstance(SavableParameter identification, SUUID uuid,
-			List<Pair<SavableParameter, UniversalSavableValue>> createParameters) {
-		for (Pair<SavableParameter, UniversalSavableValue> entry : createParameters)
+			List<Pair<SavableParameter, StringSavableValue>> createParameters) {
+		for (Pair<SavableParameter, StringSavableValue> entry : createParameters)
 			setStringSavableValue(identification, uuid, entry.getKey(), entry.getValue());
+		save();
 	}
 
 	@Override

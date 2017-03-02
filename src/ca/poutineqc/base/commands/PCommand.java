@@ -23,7 +23,7 @@ public enum PCommand implements Command {
 		public void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args,
 				Object... extra) {
 
-			Language responseLanguage = Library.instance().getLanguage(commandSender);
+			Language responseLanguage = Library.getLanguage(commandSender);
 
 			String header = Utils.color("&8&m" + StringUtils.repeat(" ", 15) + "&r&8| " + plugin.getPrimaryColor()
 					+ plugin.getName() + " " + plugin.getSecondaryColor()
@@ -44,7 +44,7 @@ public enum PCommand implements Command {
 				if (pageNumber < 1)
 					pageNumber = 1;
 
-				requestedCommands = plugin.getCommandManager().getRequiredCommands(commandSender, commandType);
+				requestedCommands = plugin.getCommandManager().getRequiredCommands(plugin, commandSender, commandType);
 				if (pageNumber > Math.ceil((double) requestedCommands.size() / 3))
 					pageNumber = (int) Math.ceil((double) requestedCommands.size() / 3);
 
@@ -64,7 +64,7 @@ public enum PCommand implements Command {
 					break;
 				}
 
-				requestedCommands = plugin.getCommandManager().getRequiredCommands(commandSender, commandType);
+				requestedCommands = plugin.getCommandManager().getRequiredCommands(plugin, commandSender, commandType);
 
 				if (args.length > 2) {
 					try {
@@ -143,26 +143,25 @@ public enum PCommand implements Command {
 			}
 
 			Player player = (Player) commandSender;
-			Language responseLanguage = Library.instance().getLanguage(player.getUniqueId());
+			Language responseLanguage = Library.getLanguage(player.getUniqueId());
 
 			if (args.length == 1) {
 				player.sendMessage(Utils.color(plugin.getPrimaryColor() + responseLanguage.getMessage(PMessages.LANGUAGE_LIST)));
-				for (Entry<String, Language> language : Library.instance().getLanguageManager().entrySet())
+				for (Entry<String, Language> language : Library.getLanguageManager().entrySet())
 					player.sendMessage(plugin.getSecondaryColor() + "- " + language.getValue().getLanguageName());
 				return;
 			}
 
-			Language language = Library.instance().getLanguageManager().getLanguage(args[1]);
+			Language language = Library.getLanguageManager().getLanguage(args[1]);
 			if (language == null) {
 				player.sendMessage(Utils
 						.color(responseLanguage.getMessage(PMessages.LANGUAGE_NOT_FOUND).replace("%cmd%", cmdValue)));
 				return;
 			}
 
-			PPlayer basePlayer = Library.instance().getPPlayer(player.getUniqueId());
+			PPlayer basePlayer = Library.getPPlayer(player.getUniqueId());
 			if (basePlayer == null) {
-				basePlayer = new PPlayer(Library.instance(), player.getUniqueId());
-				Library.instance().getPlayerManager().add(basePlayer);
+				basePlayer = Library.newPPlayer(player.getUniqueId());
 			}
 
 			basePlayer.setLanguage(language);
@@ -172,7 +171,7 @@ public enum PCommand implements Command {
 		@Override
 		public void complete(List<String> tabCompletion, String[] args) {
 			if (args.length == 2)
-				for (Entry<String, Language> lang : Library.instance().getLanguageManager().entrySet())
+				for (Entry<String, Language> lang : Library.getLanguageManager().entrySet())
 					if (lang.getValue().getLanguageName().toLowerCase().startsWith(args[1].toLowerCase()))
 						tabCompletion.add(lang.getValue().getLanguageName());
 		}
@@ -186,8 +185,8 @@ public enum PCommand implements Command {
 			plugin.reload();
 
 			Language responseLanguage = (commandSender instanceof Player)
-					? Library.instance().getLanguage(((Player) commandSender).getUniqueId())
-					: Library.instance().getLanguageManager().getDefault();
+					? Library.getLanguage(((Player) commandSender).getUniqueId())
+					: Library.getLanguageManager().getDefault();
 
 			commandSender.sendMessage(responseLanguage.getMessage(PMessages.RELOAD));
 		}
@@ -207,7 +206,7 @@ public enum PCommand implements Command {
 	private PCommand(String cmdChoice, Message helpMessage, String permission, String usage, CommandType type) {
 		this.cmdChoice = cmdChoice;
 		this.usage = usage;
-		this.permission = permission.replace("%plugin%", Library.instance().getName().toLowerCase());
+		this.permission = permission;
 		this.helpMessage = helpMessage;
 		this.type = type;
 	}
@@ -236,8 +235,8 @@ public enum PCommand implements Command {
 	}
 
 	@Override
-	public boolean hasPermission(CommandSender commandSender) {
-		return (permission != null) ? commandSender.hasPermission(permission) : true;
+	public boolean hasPermission(PPlugin plugin, CommandSender commandSender) {
+		return (permission != null) ? commandSender.hasPermission(permission.replace("%plugin%", plugin.getName().toLowerCase())) : true;
 	}
 
 	@Override

@@ -1,0 +1,4 @@
+name: PouLib
+main: ca.poutineqc.base.plugin.Library
+version: 1.0
+description: Lib

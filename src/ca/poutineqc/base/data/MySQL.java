@@ -6,6 +6,8 @@ import java.sql.SQLException;
 import java.util.logging.Level;
 
 import ca.poutineqc.base.plugin.Library;
+import ca.poutineqc.base.plugin.PConfigKey;
+import ca.poutineqc.base.plugin.PPlugin;
 
 /**
  * A MySQL connection to a Database. Used to store data on it and read data from
@@ -29,22 +31,25 @@ public class MySQL extends Database {
 	 *            on
 	 * @see Library
 	 */
-	public MySQL(Library plugin, String table) {
+	public MySQL(PPlugin plugin, String table) {
 		super(plugin, table);
 	}
 
 	@Override
 	public Connection getSQLConnection() {
-		String host = plugin.getConfig().getString("host", "127.0.0.1");
-		int port = plugin.getConfig().getInt("port", 3306);
-		String user = plugin.getConfig().getString("user", "root");
-		String password = plugin.getConfig().getString("password");
+		String host = plugin.getConfig().getString(PConfigKey.DB_HOST.getKey(), "127.0.0.1");
+		int port = plugin.getConfig().getInt(PConfigKey.DB_PORT.getKey(), 3306);
+		String user = plugin.getConfig().getString(PConfigKey.DB_USER.getKey(), "root");
+		String password = plugin.getConfig().getString(PConfigKey.DB_PASS.getKey());
+		String database = plugin.getConfig().getString(PConfigKey.DB_DB.getKey());
+		
 
 		try {
-			return connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/"
-					+ plugin.getConfig().getString("database") + "?autoReconnect=true", user, password);
+			Connection conn = DriverManager.getConnection(
+					"jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true", user, password);
+			return conn;
 		} catch (SQLException ex) {
-			plugin.getLogger().log(Level.SEVERE, "MySQL exception on initialize", ex);
+			plugin.get().getLogger().log(Level.SEVERE, "MySQL exception on initialize", ex);
 		}
 		return null;
 	}

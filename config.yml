@@ -1,2 +1,16 @@
+
+
+
+
+# Set to true if you have a MySQL database and fill the information below
+# Warning: If you change this, a simple /dac reload won't do, you'll have to restart the server.
 dataStorage: "sqlite"
-dataStorage: "minecraft"
+
+
+# Fill this section only if using MySQL ou SQLite data storage method
+host: 127.0.0.1
+port: 3306
+user: ''
+password: ''
+database: 'minecraft'
+tablePrefix: 'poulib_'

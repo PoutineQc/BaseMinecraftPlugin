@@ -1,10 +1,8 @@
 package ca.poutineqc.base.lang;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PConfigKey;
 import ca.poutineqc.base.plugin.PPlugin;
 
@@ -14,35 +12,27 @@ public abstract class LanguagesManager extends HashMap<String, Language> {
 	 * 
 	 */
 	private static final long serialVersionUID = 8876668613284932805L;
-
-	public String[] builtIn;
-
-	private String defaultLanguage;
+	private static final String DEFAULT = "default";
 
 	public abstract Collection<Message> getMessages();
 
 	public LanguagesManager(PPlugin plugin, String[] builtIn) {
-		this.builtIn = builtIn;
-
 		for (String fileName : builtIn)
 			this.put(fileName, new Language(plugin, fileName, true, PMessages.PREFIX));
 
-		defaultLanguage = plugin.getConfig().getString(PConfigKey.LANGUAGE.getKey(), builtIn[0]);
-		if (!isLanguage(defaultLanguage)) {
-			Language temp = new Language(plugin, defaultLanguage, false, PMessages.PREFIX);
-			if (temp.yamlFile.isLoaded())
-				this.put(defaultLanguage, temp);
+		String defaultLanguageKey = plugin.getConfig().getString(PConfigKey.LANGUAGE.getKey(), builtIn[0]);
+		Language defaultLanguage = this.get(defaultLanguageKey);
+		if (defaultLanguage == null) {
+			defaultLanguage = new Language(plugin, defaultLanguageKey, false, PMessages.PREFIX);
+			if (defaultLanguage.yamlFile.isLoaded())
+				this.put(defaultLanguageKey, defaultLanguage);
+			else
+				defaultLanguage = this.getMain();
 		}
-
-		Collection<Message> messages = new ArrayList<Message>();
-
-		for (Message message : PMessages.values())
-			messages.add(message);
-
-		messages.addAll(getMessages());
+		this.put(DEFAULT, defaultLanguage);
 
 		for (Entry<String, Language> entry : this.entrySet())
-			entry.getValue().addMessages(messages);
+			entry.getValue().addMessages(getMessages());
 	}
 
 	public boolean isLanguage(String fileName) {
@@ -61,28 +51,33 @@ public abstract class LanguagesManager extends HashMap<String, Language> {
 		for (Entry<String, Language> language : this.entrySet())
 			if (language.getValue().getLanguageName().equalsIgnoreCase(name))
 				return language.getValue();
-			
+
 		return getDefault();
 	}
 
 	public Language getDefault() {
-		for (String fn : this.keySet())
-			if (fn.equals(defaultLanguage))
-				return this.get(fn);
+		if (this.containsKey(DEFAULT))
+			return this.get(DEFAULT);
 
 		return getMain();
 	}
 
 	public Language getMain() {
 		for (String fn : this.keySet())
-			if (fn.equals(builtIn[0]))
+			if (fn.equals("en"))
 				return this.get(fn);
 
 		return null;
 	}
 
 	public void append(LanguagesManager languageManager) {
-		
+		for (Entry<String, Language> language : languageManager.entrySet()) {
+			if (this.containsKey(language.getKey()))
+				this.get(language.getKey()).putAll(language.getValue());
+			else
+				this.put(language.getKey(), language.getValue());
+
+		}
 	}
 
 }

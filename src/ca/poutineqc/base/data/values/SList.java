@@ -7,6 +7,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import ca.poutineqc.base.utils.PowerOfTwo;
+
 public abstract class SList<T extends UniversalSavableValue> extends ArrayList<T>
 		implements StringSavableValue, JSONSavableValue {
 
@@ -115,8 +117,9 @@ public abstract class SList<T extends UniversalSavableValue> extends ArrayList<T
 					"The amount of elements in the String provided is too large for the size of the SList");
 
 		for (int i = 0; i < amountToDeserialize; i++) {
-			this.add(convert(
-					values.substring(i * getElementMaxStringLength(), ((i + 1) * getElementMaxStringLength() - 1))));
+			int startPos = i * getElementMaxStringLength();
+			String sString = values.substring(startPos, startPos + getElementMaxStringLength());
+			this.add(convert(sString));
 		}
 	}
 
@@ -128,18 +131,19 @@ public abstract class SList<T extends UniversalSavableValue> extends ArrayList<T
 	@Override
 	public JsonObject toJsonObject() {
 		JsonObject json = new JsonObject();
-		
+
 		JsonArray array = new JsonArray();
 		for (T element : this)
 			array.add(element.toJsonObject());
 
 		json.addProperty(LENGTH_KEY, exponent);
 		json.add(PRIMAL_KEY, array);
-		
+
 		return json;
 	}
 
 	public abstract T convert(String value);
+
 	public abstract T convert(JsonObject value);
 
 	public abstract int getElementMaxStringLength();

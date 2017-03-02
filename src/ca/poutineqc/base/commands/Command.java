@@ -36,6 +36,6 @@ public interface Command {
 
 	boolean isOfType(CommandType commandType);
 
-	boolean hasPermission(CommandSender commandSender);
+	boolean hasPermission(PPlugin plugin, CommandSender commandSender);
 
 }

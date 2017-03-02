@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -19,9 +20,7 @@ import com.google.gson.JsonSyntaxException;
 
 import ca.poutineqc.base.data.values.SUUID;
 import ca.poutineqc.base.data.values.StringSavableValue;
-import ca.poutineqc.base.data.values.UniversalSavableValue;
 import ca.poutineqc.base.instantiable.SavableParameter;
-import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Pair;
 
@@ -30,7 +29,7 @@ public class JSON extends FlatFile {
 	JsonObject json;
 
 	public JSON(PPlugin plugin, String fileName, boolean buildIn, String... folders) {
-		super(plugin, fileName, buildIn, folders);
+		super(plugin, fileName.replace(".json", "") + ".json", buildIn, folders);
 
 		try {
 			JsonElement jsonelement = new JsonParser().parse(new FileReader(file));
@@ -54,27 +53,51 @@ public class JSON extends FlatFile {
 
 	@Override
 	public void setInt(SavableParameter identification, SUUID uuid, SavableParameter parameter, int value) {
+		JsonObject savable = json.getAsJsonObject(uuid.getUUID().toString());
+		savable.addProperty(parameter.getKey(), value);
+		json.add(uuid.getUUID().toString(), savable);
+		save();
 	}
 
 	@Override
 	public void setDouble(SavableParameter identification, SUUID uuid, SavableParameter parameter, double value) {
+		JsonObject savable = json.getAsJsonObject(uuid.getUUID().toString());
+		savable.addProperty(parameter.getKey(), value);
+		json.add(uuid.getUUID().toString(), savable);
+		save();
 	}
 
 	@Override
 	public void setLong(SavableParameter identification, SUUID uuid, SavableParameter parameter, long value) {
+		JsonObject savable = json.getAsJsonObject(uuid.getUUID().toString());
+		savable.addProperty(parameter.getKey(), value);
+		json.add(uuid.getUUID().toString(), savable);
+		save();
 	}
 
 	@Override
 	public void setBoolean(SavableParameter identification, SUUID uuid, SavableParameter parameter, boolean value) {
+		JsonObject savable = json.getAsJsonObject(uuid.getUUID().toString());
+		savable.addProperty(parameter.getKey(), value);
+		json.add(uuid.getUUID().toString(), savable);
+		save();
 	}
 
 	@Override
 	public void setFloat(SavableParameter identification, SUUID uuid, SavableParameter parameter, float value) {
+		JsonObject savable = json.getAsJsonObject(uuid.getUUID().toString());
+		savable.addProperty(parameter.getKey(), value);
+		json.add(uuid.getUUID().toString(), savable);
+		save();
 	}
 
 	@Override
 	public void setStringSavableValue(SavableParameter identifier, SUUID uuid, SavableParameter parameter,
 			StringSavableValue value) {
+		JsonObject savable = json.getAsJsonObject(uuid.getUUID().toString());
+		savable.addProperty(parameter.getKey(), value.toSString());
+		json.add(uuid.getUUID().toString(), savable);
+		save();
 	}
 
 	@Override
@@ -88,10 +111,10 @@ public class JSON extends FlatFile {
 
 	@Override
 	public void newInstance(SavableParameter identification, SUUID uuid,
-			List<Pair<SavableParameter, UniversalSavableValue>> createParameters) {
+			List<Pair<SavableParameter, StringSavableValue>> createParameters) {
 		JsonObject savable = new JsonObject();
 		
-		for (Pair<SavableParameter, UniversalSavableValue> parameter : createParameters)
+		for (Pair<SavableParameter, StringSavableValue> parameter : createParameters)
 			savable.addProperty(parameter.getKey().getKey(), parameter.getValue().toSString());
 		
 		json.add(uuid.getUUID().toString(), savable);
@@ -99,10 +122,15 @@ public class JSON extends FlatFile {
 	}
 
 	@Override
-	public Map<SavableParameter, String> getIndividualData(SavableParameter parameter, SUUID uuid,
+	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID uuid,
 			Collection<SavableParameter> parameters) {
-		// TODO Auto-generated method stub
-		return null;
+		Map<SavableParameter, String> individualData = new HashMap<SavableParameter, String>();
+		
+		JsonObject individualJson = json.get(uuid.getUUID().toString()).getAsJsonObject();
+		for (SavableParameter parameter : parameters)
+			individualData.put(parameter, individualJson.get(parameter.getKey()).getAsString());
+		
+		return individualData;
 	}
 
 	private void save() {

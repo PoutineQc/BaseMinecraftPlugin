@@ -11,11 +11,12 @@ public interface PPlugin {
 
 	public ChatColor getPrimaryColor();
 	public ChatColor getSecondaryColor();
-	public void reload();
+	public boolean reload();
 	public String getName();
 	public CommandManager getCommandManager();
 	public LanguagesManager getLanguages();
 	public ConfigurationSection getConfig();
 	public JavaPlugin get();
+	public boolean canBeReloaded();
 	
 }
