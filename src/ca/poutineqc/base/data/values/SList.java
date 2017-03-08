@@ -7,6 +7,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import ca.poutineqc.base.data.JSONSavableValue;
+import ca.poutineqc.base.data.StringSavableValue;
+import ca.poutineqc.base.data.UniversalSavableValue;
 import ca.poutineqc.base.utils.PowerOfTwo;
 
 public abstract class SList<T extends UniversalSavableValue> extends ArrayList<T>
@@ -99,6 +102,18 @@ public abstract class SList<T extends UniversalSavableValue> extends ArrayList<T
 	public String toSString() {
 		return serialize();
 	}
+
+//	@Override
+//	public String toString() {
+//		StringBuilder sb = new StringBuilder("[");
+//		
+//		for (T i : this)
+//			sb.append(i.toString() + ", ");
+//			
+//		sb.replace(sb.length() - 2, sb.length(), "]");
+//		
+//		return sb.toString();
+//	}
 
 	private String serialize() {
 		StringBuilder sb = new StringBuilder();

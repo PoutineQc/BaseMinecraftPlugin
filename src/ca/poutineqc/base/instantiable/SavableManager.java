@@ -1,12 +1,16 @@
 package ca.poutineqc.base.instantiable;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
-import ca.poutineqc.base.data.values.SUUID;
+import ca.poutineqc.base.data.DataStorage;
+import ca.poutineqc.base.data.JSON;
+import ca.poutineqc.base.data.MySQL;
+import ca.poutineqc.base.data.SQLite;
+import ca.poutineqc.base.data.YAML;
+import ca.poutineqc.base.plugin.PPlugin;
 
 /**
  * A manager that contains an array of Object that extend the interface Savable.
@@ -16,32 +20,77 @@ import ca.poutineqc.base.data.values.SUUID;
  * @author Sébastien Chagnon
  * @see Savable
  */
-public abstract class SavableManager<T extends Savable> {
+public abstract class SavableManager<T extends Savable> extends LinkedList<T> {
 
-	private List<T> instances;
-	private Collection<SUUID> savedInstances;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5816468850208714331L;
+
+	private DataStorage data;
+
+	private Collection<UUID> savedInstances;
 
 	/**
 	 * Creates an empty manager.
 	 */
-	public SavableManager() {
-		this.instances = new LinkedList<T>();
-		try {
-			this.savedInstances = getAllSavedUUIDs();
-		} catch (Exception e) {
-			this.savedInstances = new ArrayList<SUUID>();
-		}
+	public SavableManager(PPlugin plugin, String tableName, boolean loadSavedInstances) {
+
+		data = openDataStorage(plugin, tableName);
+
+		this.savedInstances = data.getAllIdentifications(getIdentification(), getColumns());
+
+		if (loadSavedInstances)
+			for (UUID id : savedInstances)
+				this.add(newInstance(data, id));
+
 	}
 
-	/**
-	 * Returns true if this manager's instances contains the specified element.
-	 *
-	 * @param instance
-	 *            the instance to check for
-	 * @return true if this manager's instances contains the specified element
-	 */
-	public boolean contains(T instance) {
-		return instances.contains(instance);
+	public void loadIfSaved(UUID uuid) {
+		if (savedInstances.contains(uuid))
+			this.add(newInstance(data, uuid));
+	}
+
+	public void removeIfHandled(UUID uuid) {
+		T instance = get(uuid);
+		this.remove(instance);
+	}
+
+	public DataStorage getDataStorage() {
+		return data;
+	}
+
+	public abstract T newInstance(DataStorage data, UUID uuid);
+
+	@Override
+	public boolean add(T e) {
+		if (!savedInstances.contains(e.getUUID()))
+			savedInstances.add(e.getUUID());
+		
+		return super.add(e);
+	}
+
+	private DataStorage openDataStorage(PPlugin plugin, String tableName) {
+
+		switch (plugin.getConfig().getString("dataStorage").toLowerCase()) {
+		case "mysql":
+
+			return new MySQL(plugin, tableName);
+
+		case "json":
+
+			return new JSON(plugin, tableName.toLowerCase(), false);
+
+		case "yaml":
+		case "yml":
+
+			return new YAML(plugin, tableName.toLowerCase(), false);
+
+		case "sqlite":
+		default:
+
+			return new SQLite(plugin, tableName);
+		}
 	}
 
 	/**
@@ -55,23 +104,11 @@ public abstract class SavableManager<T extends Savable> {
 	 * @see Savable#getUUID
 	 */
 	public T get(UUID identification) {
-		for (T instance : instances)
+		for (T instance : this)
 			if (instance.getUUID().compareTo(identification) == 0)
 				return instance;
 
 		return null;
-	}
-
-	/**
-	 * Adds all of the supplied instances to this manager's instances
-	 *
-	 * @param instances
-	 *            the list of instances that is to be added to this manager's
-	 *            instances
-	 */
-	public void addAll(List<T> instances) {
-		for (T instance : instances)
-			this.add(instance);
 	}
 
 	/**
@@ -85,52 +122,22 @@ public abstract class SavableManager<T extends Savable> {
 	 * @see Savable#getName
 	 */
 	public T get(String name) {
-		for (T instance : instances)
+		for (T instance : this)
 			if (instance.getName().equalsIgnoreCase(name))
 				return instance;
 
 		return null;
 	}
 
-	/**
-	 * Adds the required instance in this manager's instances.
-	 *
-	 * @param instance
-	 *            element to be added from this manager's instances
-	 * @throws IllegalArgumentException
-	 *             if the instance to add to this manager's instances is already
-	 *             in them
-	 */
-	public void add(T instance) throws IllegalArgumentException {
-		if (this.contains(instance))
-			throw new IllegalArgumentException("This instance is already handled by the manager");
-
-		instances.add(instance);
-	}
-
-	/**
-	 * Removes the required instance of this manager's instances.
-	 *
-	 * @param instance
-	 *            element to be removed from this manager's instances
-	 * @return true if this list contained the specified element
-	 */
-	public boolean remove(T instance) {
-		return instances.remove(instance);
-	}
-
-	abstract public Collection<SUUID> getAllSavedUUIDs();
+	abstract public SavableParameter getIdentification();
 
 	public boolean isSaved(UUID uuid) {
-		for (SUUID id : savedInstances)
-			if (id.getUUID().compareTo(uuid) == 0)
+		for (UUID id : savedInstances)
+			if (id.equals(uuid))
 				return true;
 
 		return false;
 	}
 
-	public Collection<SUUID> getSaved() {
-		return savedInstances;
-	}
-
+	abstract public List<SavableParameter> getColumns();
 }

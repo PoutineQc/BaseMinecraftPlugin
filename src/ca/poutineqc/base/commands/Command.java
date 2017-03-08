@@ -24,7 +24,7 @@ public interface Command {
 		GENERAL, SETUP, ADMIN, PLAYER,
 	}
 
-	void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args, Object... extra);
+	void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args);
 
 	void complete(List<String> tabCompletion, String[] args);
 

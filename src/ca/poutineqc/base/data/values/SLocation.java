@@ -10,7 +10,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.google.gson.JsonObject;
 
-public class SLocation extends Location implements UniversalSavableValue {
+import ca.poutineqc.base.data.UniversalSavableValue;
+
+public class SLocation implements UniversalSavableValue {
 
 	public static final int MAX_STRING_LENGTH = SUUID.MAX_STRING_LENGTH + (3 * SDouble.MAX_STRING_LENGTH)
 			+ (2 * SFloat.MAX_STRING_LENGTH);
@@ -29,11 +31,16 @@ public class SLocation extends Location implements UniversalSavableValue {
 	private SFloat yaw;
 
 	public SLocation(World world, double x, double y, double z) {
-		super(world, x, y, z);
+		this(world, x, y, z, 0, 0);
 	}
 
-	public SLocation(World world, double x, double y, double z, float yaw, float pitch) {
-		super(world, x, y, z, yaw, pitch);
+	public SLocation(World world, double x, double y, double z, float pitch, float yaw) {
+		this.worldUUID = new SUUID(world == null ? UUID.randomUUID() : world.getUID());
+		this.x = new SDouble(x);
+		this.y = new SDouble(y);
+		this.z = new SDouble(z);
+		this.pitch = new SFloat(pitch);
+		this.yaw = new SFloat(yaw);
 	}
 
 	public SLocation(Location location) {
@@ -42,7 +49,6 @@ public class SLocation extends Location implements UniversalSavableValue {
 	}
 
 	public SLocation(String value) throws IllegalArgumentException {
-		super(null, 0, 0, 0);
 
 		if (value.length() != getMaxToStringLength())
 			throw new IllegalArgumentException("The String passed does not represent a Location.");
@@ -50,30 +56,24 @@ public class SLocation extends Location implements UniversalSavableValue {
 		int i = 0;
 		int j = SUUID.MAX_STRING_LENGTH;
 		this.worldUUID = new SUUID(value.substring(i, j));
-		this.setWorld(Bukkit.getWorld(UUID.fromString(worldUUID.getUUID().toString())));
 
 		i = j;
 		j += SDouble.MAX_STRING_LENGTH;
 		this.x = new SDouble(value.substring(i, j));
-		this.setX(x.getDouble());
 
 		i = j;
 		j += SDouble.MAX_STRING_LENGTH;
 		this.y = new SDouble(value.substring(i, j));
-		this.setY(y.getDouble());
 
 		i = j;
 		j += SDouble.MAX_STRING_LENGTH;
 		this.z = new SDouble(value.substring(i, j));
-		this.setZ(z.getDouble());
 
 		i = j;
 		j += SFloat.MAX_STRING_LENGTH;
 		this.pitch = new SFloat(value.substring(i, j));
-		this.setPitch(pitch.getFloat());
 
 		this.yaw = new SFloat(value.substring(j));
-		this.setYaw(yaw.getFloat());
 	}
 
 	public SLocation(ConfigurationSection cs) {
@@ -91,19 +91,6 @@ public class SLocation extends Location implements UniversalSavableValue {
 	public String toSString() {
 		StringBuilder sb = new StringBuilder();
 
-		try {
-			if (this.getWorld() != null)
-				worldUUID = new SUUID(this.getWorld().getUID());
-			
-			x.setDouble(this.getX());
-			y.setDouble(this.getY());
-			z.setDouble(this.getZ());
-			pitch.setFloat(this.getPitch());
-			yaw.setFloat(this.getYaw());
-		} catch (IllegalArgumentException e) {
-			Bukkit.getLogger().severe("There was a problem creating a PString with the world UUID");
-		}
-
 		sb.append(worldUUID.toSString());
 		sb.append(x.toSString());
 		sb.append(y.toSString());
@@ -115,6 +102,18 @@ public class SLocation extends Location implements UniversalSavableValue {
 	}
 
 	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(Bukkit.getWorld(worldUUID.getUUID()) + ", ");
+		sb.append(x.getDouble() + ", ");
+		sb.append(y.getDouble() + ", ");
+		sb.append(z.getDouble() + ", ");
+		sb.append(pitch.getFloat() + ", ");
+		sb.append(yaw.getFloat());
+		return sb.toString();
+	}
+
+	@Override
 	public int getMaxToStringLength() {
 		return MAX_STRING_LENGTH;
 	}
@@ -122,25 +121,42 @@ public class SLocation extends Location implements UniversalSavableValue {
 	@Override
 	public ConfigurationSection toConfigurationSection() {
 		ConfigurationSection cs = new YamlConfiguration();
-		cs.set(WORLD_KEY, this.getWorld().getUID().toString());
-		cs.set(X_KEY, this.getX());
-		cs.set(Y_KEY, this.getY());
-		cs.set(Z_KEY, this.getZ());
-		cs.set(PITCH_KEY, this.getPitch());
-		cs.set(YAW_KEY, this.getYaw());
+		cs.set(WORLD_KEY, worldUUID.toString());
+		cs.set(X_KEY, x.toString());
+		cs.set(Y_KEY, y.toString());
+		cs.set(Z_KEY, z.toString());
+		cs.set(PITCH_KEY, pitch.toString());
+		cs.set(YAW_KEY, yaw.toString());
 		return cs;
 	}
 
 	@Override
 	public JsonObject toJsonObject() {
+
+		System.out.println("json : " + this);
+		
 		JsonObject json = new JsonObject();
-		json.addProperty(WORLD_KEY, this.getWorld().getUID().toString());
-		json.addProperty(X_KEY, this.getX());
-		json.addProperty(Y_KEY, this.getY());
-		json.addProperty(Z_KEY, this.getZ());
-		json.addProperty(PITCH_KEY, this.getPitch());
-		json.addProperty(YAW_KEY, this.getYaw());
+		json.addProperty(WORLD_KEY, worldUUID.toString());
+		json.addProperty(X_KEY, x.getDouble());
+		json.addProperty(Y_KEY, y.getDouble());
+		json.addProperty(Z_KEY, z.getDouble());
+		json.addProperty(PITCH_KEY, pitch.getFloat());
+		json.addProperty(YAW_KEY, yaw.getFloat());
 		return json;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return super.equals(obj);
+	}
+
+	public Location getLocation() {
+		World world = Bukkit.getWorld(worldUUID.getUUID());
+		
+		System.out.println("loc : " + this);
+		
+		return world == null ? null
+				: new Location(world, x.getDouble(), y.getDouble(), z.getDouble(), yaw.getFloat(), pitch.getFloat());
 	}
 
 }

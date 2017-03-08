@@ -39,7 +39,19 @@ public enum PMessages implements Message {
 	// NO
 	HELP_RELOAD("helpReload", "To reload the plugin's parameters"),
 	// YES
-	RELOAD("reload", "%s%Plugin reload");
+	RELOAD("reload", "%s%Plugin reload"),
+	// YES
+	HELP("help", "&7Type %s%/%cmd% help &7to get some help with the plugin's commands"),
+	// YES
+	DEVELOPPER("developper", "&7Developped by: %s%%developper%"),
+	// YES
+	VERSION("version", "&7Plugin version: %s%%version%"),
+	// YES
+	ERROR_COMMAND("errorCommand", "&cThere is no such command. Type &8/%cmd% help &cto get some help"),
+	// NO
+	KEYWORD_SERVER("keyWordServer", "server"),
+	// NO
+	COMMAND_NO_PERMISSION("commandNoPermission", "You don't have the permission to do this.");
 
 	private String key;
 	private String defaultValue;

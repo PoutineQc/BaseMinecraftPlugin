@@ -12,27 +12,29 @@ public abstract class LanguagesManager extends HashMap<String, Language> {
 	 * 
 	 */
 	private static final long serialVersionUID = 8876668613284932805L;
-	private static final String DEFAULT = "default";
+	static final String DEFAULT = "default";
 
 	public abstract Collection<Message> getMessages();
 
 	public LanguagesManager(PPlugin plugin, String[] builtIn) {
-		for (String fileName : builtIn)
-			this.put(fileName, new Language(plugin, fileName, true, PMessages.PREFIX));
+		for (String fileName : builtIn){
+			this.put(fileName, new Language(plugin, fileName, true, false));
+		}
 
 		String defaultLanguageKey = plugin.getConfig().getString(PConfigKey.LANGUAGE.getKey(), builtIn[0]);
 		Language defaultLanguage = this.get(defaultLanguageKey);
 		if (defaultLanguage == null) {
-			defaultLanguage = new Language(plugin, defaultLanguageKey, false, PMessages.PREFIX);
-			if (defaultLanguage.yamlFile.isLoaded())
+			defaultLanguage = new Language(plugin, defaultLanguageKey, false, false);
+			if (!defaultLanguage.yamlFile.isLoaded())
 				this.put(defaultLanguageKey, defaultLanguage);
 			else
 				defaultLanguage = this.getMain();
 		}
-		this.put(DEFAULT, defaultLanguage);
+		this.put(DEFAULT, new Language(defaultLanguage));
 
 		for (Entry<String, Language> entry : this.entrySet())
 			entry.getValue().addMessages(getMessages());
+		
 	}
 
 	public boolean isLanguage(String fileName) {
@@ -52,7 +54,7 @@ public abstract class LanguagesManager extends HashMap<String, Language> {
 			if (language.getValue().getLanguageName().equalsIgnoreCase(name))
 				return language.getValue();
 
-		return getDefault();
+		return null;
 	}
 
 	public Language getDefault() {

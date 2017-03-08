@@ -5,14 +5,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import ca.poutineqc.base.data.values.SUUID;
-import ca.poutineqc.base.data.values.StringSavableValue;
 import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PConfigKey;
@@ -63,7 +62,7 @@ public abstract class Database implements DataStorage {
 	public Database(PPlugin plugin, String tableName) {
 
 		this.plugin = plugin;
-		this.tableName = plugin.getConfig().getString(PConfigKey.DB_TABLE_PREFIX.getKey(), plugin.getName() + "_")
+		this.tableName = plugin.getConfig().getString(PConfigKey.DB_TABLE_PREFIX.getKey(), plugin.getDescription().getName() + "_")
 				+ tableName;
 
 	}
@@ -147,14 +146,16 @@ public abstract class Database implements DataStorage {
 		update(getNewInstanceQuery(identification, uuid, createParameters));
 	}
 
-	@Override
-	public void createTable(List<SavableParameter> createParameters) {
+	private void createTable(List<SavableParameter> createParameters) {
 		update(getCreateTableQuery(createParameters));
 	}
 
 	@Override
-	public List<SUUID> getAllIdentifications(SavableParameter identification) {
-		List<SUUID> identifications = new ArrayList<SUUID>();
+	public List<UUID> getAllIdentifications(SavableParameter identification, List<SavableParameter> columns) {
+		
+		createTable(columns);
+		
+		List<UUID> identifications = new ArrayList<UUID>();
 
 		String query = "SELECT * FROM " + tableName;
 
@@ -163,7 +164,7 @@ public abstract class Database implements DataStorage {
 				ResultSet resultSet = ps.executeQuery()) {
 
 			while (resultSet.next()) {
-				identifications.add(new SUUID(resultSet.getString(identification.getKey())));
+				identifications.add(new SUUID(resultSet.getString(identification.getKey())).getUUID());
 			}
 
 		} catch (SQLException ex) {
@@ -175,7 +176,7 @@ public abstract class Database implements DataStorage {
 
 	@Override
 	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID id,
-			Collection<SavableParameter> parameters) {
+			SavableParameter[] parameters) {
 
 		String query = "SELECT * FROM " + tableName + " WHERE " + identification.getKey() + "='" + id.toSString()
 				+ "';";

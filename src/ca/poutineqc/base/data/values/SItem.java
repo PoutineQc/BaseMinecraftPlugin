@@ -1,4 +1,4 @@
-package ca.poutineqc.base.utils;
+package ca.poutineqc.base.data.values;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,8 +8,6 @@ import java.util.Map.Entry;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -19,7 +17,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import ca.poutineqc.base.data.values.JSONSavableValue;
+import ca.poutineqc.base.data.JSONSavableValue;
+import ca.poutineqc.base.utils.Utils;
 
 public class SItem implements JSONSavableValue {
 
@@ -32,13 +31,13 @@ public class SItem implements JSONSavableValue {
 	private static final String ENCHANTMENTS_VALUE = "value";
 	private static final String LORE = "lore";
 
-	protected Material material;
-	protected byte amount;
-	protected short durability;
+	private Material material;
+	private byte amount;
+	private short durability;
 
-	protected String name;
-	protected List<String> lore;
-	protected Map<Enchantment, Integer> enchantments;
+	private String name;
+	private List<String> lore;
+	private Map<Enchantment, Integer> enchantments;
 
 	public SItem(Material material) {
 		this.material = material;
@@ -48,6 +47,11 @@ public class SItem implements JSONSavableValue {
 		this.name = null;
 		this.enchantments = new HashMap<Enchantment, Integer>();
 		this.lore = null;
+	}
+
+	public SItem(Material material, short durability) {
+		this(material);
+		this.durability = 3;
 	}
 
 	public SItem(ItemStack itemStack) {
@@ -87,10 +91,38 @@ public class SItem implements JSONSavableValue {
 
 	}
 
-	public ConfigurationSection toConfigurationSection() {
-		ConfigurationSection cs = new YamlConfiguration();
+	@Override
+	public JsonObject toJsonObject() {
+		JsonObject json = new JsonObject();
 
-		return cs;
+		json.addProperty(MATERIAL_NAME, material.name());
+		json.addProperty(AMOUNT, amount);
+		json.addProperty(DURABILITY, durability);
+
+		if (name != null)
+			json.addProperty(NAME, name);
+
+		JsonArray enchantments = new JsonArray();
+		for (Entry<Enchantment, Integer> enchantment : this.enchantments.entrySet()) {
+			JsonObject element = new JsonObject();
+			System.out.println(enchantment.getKey());
+			element.addProperty(ENCHANTMENTS_NAME, enchantment.getKey().getName());
+			element.addProperty(ENCHANTMENTS_VALUE, enchantment.getValue());
+			enchantments.add(element);
+		}
+		json.add(ENCHANTMENTS, enchantments);
+
+		if (lore != null) {
+			JsonArray lore = new JsonArray();
+			for (String loreRow : this.lore) {
+				JsonPrimitive element = new JsonPrimitive(loreRow);
+				lore.add(element);
+			}
+
+			json.add(LORE, lore);
+		}
+
+		return json;
 	}
 
 	public ItemStack getItem() {
@@ -137,6 +169,11 @@ public class SItem implements JSONSavableValue {
 			return false;
 
 		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + ":" + toJsonObject();
 	}
 
 	public void setData(short durability) {
@@ -208,39 +245,5 @@ public class SItem implements JSONSavableValue {
 
 	public List<String> getLore() {
 		return lore;
-	}
-
-	@Override
-	public JsonObject toJsonObject() {
-		JsonObject json = new JsonObject();
-
-		json.addProperty(MATERIAL_NAME, material.name());
-		json.addProperty(AMOUNT, amount);
-		json.addProperty(DURABILITY, durability);
-
-		if (name != null)
-			json.addProperty(NAME, name);
-
-		JsonArray enchantments = new JsonArray();
-		for (Entry<Enchantment, Integer> enchantment : this.enchantments.entrySet()) {
-			JsonObject element = new JsonObject();
-			System.out.println(enchantment.getKey());
-			element.addProperty(ENCHANTMENTS_NAME, enchantment.getKey().getName());
-			element.addProperty(ENCHANTMENTS_VALUE, enchantment.getValue());
-			enchantments.add(element);
-		}
-		json.add(ENCHANTMENTS, enchantments);
-
-		if (lore != null) {
-			JsonArray lore = new JsonArray();
-			for (String loreRow : this.lore) {
-				JsonPrimitive element = new JsonPrimitive(loreRow);
-				lore.add(element);
-			}
-
-			json.add(LORE, lore);
-		}
-
-		return json;
 	}
 }

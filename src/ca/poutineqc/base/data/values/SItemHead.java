@@ -1,4 +1,4 @@
-package ca.poutineqc.base.utils;
+package ca.poutineqc.base.data.values;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -6,31 +6,28 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import com.google.gson.JsonObject;
 
+public class SItemHead extends SItem {
 
-public class SHead extends SItem {
+	private static final String PLAYER_NAME = "playerName";
 
 	private String playerName;
 
-	public SHead(String playerName) {
-		super(Material.SKULL_ITEM);
-		this.durability = 3;
+	public SItemHead(String playerName) {
+		super(Material.SKULL_ITEM, (short) 3);
 		this.playerName = playerName;
 	}
 
-	public SHead(ItemStack itemStack) {
+	public SItemHead(ItemStack itemStack) {
 		super(itemStack);
 
 		SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
 		this.playerName = meta.hasOwner() ? meta.getOwner() : null;
 	}
 
-	public SHead() {
-		super(Material.SKULL_ITEM);
-		this.durability = 3;
-	}
-
-	public SHead(JsonObject json) {
+	public SItemHead(JsonObject json) {
 		super(json);
+
+		this.playerName = json.get(PLAYER_NAME).getAsString();
 	}
 
 	@Override
@@ -46,24 +43,22 @@ public class SHead extends SItem {
 
 	@Override
 	public boolean equals(Object o) {
-		if (!super.equals(o))
+		if (!(o instanceof SItemHead))
 			return false;
 		
-		ItemStack itemStack = (ItemStack) o;
+		SItemHead head = (SItemHead) o;
 
-		if (durability != 3)
-			return true;
-
-		SkullMeta meta = (SkullMeta) itemStack.getItemMeta();
-		if (meta.hasOwner()) {
-			if (playerName == null)
-				return false;
-			else if (!meta.getOwner().equalsIgnoreCase(playerName))
-				return false;
-		} else if (playerName != null)
+		if (head.playerName.equals(head))
 			return false;
 
-		return true;
+		return super.equals(o);
+	}
+	
+	@Override
+	public JsonObject toJsonObject() {
+		JsonObject json = super.toJsonObject();
+		json.addProperty(PLAYER_NAME, playerName);
+		return json;
 	}
 
 	public void setPlayerName(String playerName) {

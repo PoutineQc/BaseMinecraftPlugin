@@ -10,9 +10,9 @@ import org.bukkit.entity.Player;
 
 import com.google.gson.JsonObject;
 
+import ca.poutineqc.base.data.StringSavableValue;
+import ca.poutineqc.base.data.UniversalSavableValue;
 import ca.poutineqc.base.data.YAML;
-import ca.poutineqc.base.data.values.StringSavableValue;
-import ca.poutineqc.base.data.values.UniversalSavableValue;
 import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PConfigKey;
 import ca.poutineqc.base.plugin.PPlugin;
@@ -29,40 +29,46 @@ public class Language extends HashMap<Message, String> implements UniversalSavab
 
 	public static final String FOLDER_NAME = "languageFiles";
 
-	private static ChatColor primary;
-	private static ChatColor secondary;
-
-	public static void setPrimaryAndSecondaryColors(ChatColor primary, ChatColor secondary) {
-		Language.primary = primary;
-		Language.secondary = secondary;
-	};
-
 	YAML yamlFile;
 	private boolean prefixBeforeEveryMessage;
-	private Message prefix;
+	private boolean serverLanguage;
 
-	public Language(PPlugin plugin, String fileName, boolean builtIn, Message prefix) {
+	public Language(PPlugin plugin, String fileName, boolean builtIn, boolean serverLanguage) {
 		prefixBeforeEveryMessage = plugin.getConfig().getBoolean(PConfigKey.PREFIX.getKey(), true);
 
-		this.prefix = prefix;
+		this.serverLanguage = serverLanguage;
 		yamlFile = new YAML(plugin, fileName, builtIn, FOLDER_NAME);
 	}
 
-	public void sendMessage(Player player, Message message) {
-		if (prefixBeforeEveryMessage)
-			player.sendMessage(getMessage(prefix).replace("%plugin%", getMessage(message.getPrefixMessage())) + " "
-					+ getMessage(message));
-		else
-			player.sendMessage(getMessage(message));
+	Language(Language defaultLanguage) {
+		this.putAll(defaultLanguage);
+		
+		this.prefixBeforeEveryMessage = defaultLanguage.prefixBeforeEveryMessage;
+		
+		this.serverLanguage = true;
+		this.yamlFile = defaultLanguage.yamlFile;
 	}
 
-	public String getMessage(Message message) {
+	public String getMessage(PPlugin plugin, Message message) {
 		if (this.containsKey(message))
-		return ChatColor.translateAlternateColorCodes('&', this.get(message)
-				.replaceAll("%p%", "&" + primary.getChar()).replaceAll("%s%", "&" + secondary.getChar()));
+			return this.get(message).replaceAll("%p%", "&" + plugin.getPrimaryColor().getChar()).replaceAll("%s%",
+					"&" + plugin.getSecondaryColor().getChar());
 		else
-			return ChatColor.translateAlternateColorCodes('&', Library.getLanguageManager().getDefault().get(message)
-					.replaceAll("%p%", "&" + primary.getChar()).replaceAll("%s%", "&" + secondary.getChar()));
+			return Library.getLanguageManager().getDefault().get(message)
+					.replaceAll("%p%", "&" + plugin.getPrimaryColor().getChar())
+					.replaceAll("%s%", "&" + plugin.getSecondaryColor().getChar());
+	}
+
+	public void sendMessage(PPlugin plugin, Player player, Message message) {
+		sendMessage(plugin, player, getMessage(plugin, message));
+	}
+
+	public void sendMessage(PPlugin plugin, Player player, String message) {
+		if (prefixBeforeEveryMessage)
+			player.sendMessage(ChatColor.translateAlternateColorCodes('&',
+					getMessage(plugin, PMessages.PREFIX).replace("%plugin%", plugin.getPrefix()) + " " + message));
+		else
+			player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
 	}
 
 	public void addMessages(Collection<Message> messages) {
@@ -71,12 +77,20 @@ public class Language extends HashMap<Message, String> implements UniversalSavab
 	}
 
 	public String getLanguageName() {
-		return ChatColor.stripColor(getMessage(PMessages.LANGUAGE_NAME));
+		if (this.serverLanguage) 
+			return ChatColor.stripColor(this.get(PMessages.KEYWORD_SERVER));
+			
+		return ChatColor.stripColor(this.get(PMessages.LANGUAGE_NAME));
 	}
 
 	@Override
 	public String toSString() {
-		return pad(yamlFile.getFileName().replace(".yml", ""));
+		return pad(serverLanguage ? LanguagesManager.DEFAULT : yamlFile.getFileName().replace(".yml", ""));
+	}
+
+	@Override
+	public String toString() {
+		return "Language:{name:" + this.getLanguageName() + "}";
 	}
 
 	@Override
@@ -95,7 +109,7 @@ public class Language extends HashMap<Message, String> implements UniversalSavab
 	@Override
 	public ConfigurationSection toConfigurationSection() {
 		ConfigurationSection cs = new YamlConfiguration();
-		cs.set(PRIMAL_KEY, yamlFile.getFileName().replace(".yml", ""));
+		cs.set(PRIMAL_KEY, serverLanguage ? LanguagesManager.DEFAULT : yamlFile.getFileName().replace(".yml", ""));
 		return cs;
 	}
 
@@ -106,7 +120,7 @@ public class Language extends HashMap<Message, String> implements UniversalSavab
 	@Override
 	public JsonObject toJsonObject() {
 		JsonObject json = new JsonObject();
-		json.addProperty(PRIMAL_KEY, yamlFile.getFileName().replace(".yml", ""));
+		json.addProperty(PRIMAL_KEY, serverLanguage ? LanguagesManager.DEFAULT : yamlFile.getFileName().replace(".yml", ""));
 		return json;
 	}
 }

@@ -5,6 +5,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.google.gson.JsonObject;
 
+import ca.poutineqc.base.data.StringSavableValue;
+import ca.poutineqc.base.data.UniversalSavableValue;
+
 public class SLong implements UniversalSavableValue {
 
 	public static final int MAX_STRING_LENGTH = 16;

@@ -1,4 +1,4 @@
-package ca.poutineqc.base.data.values;
+package ca.poutineqc.base.data;
 
 import org.bukkit.configuration.ConfigurationSection;
 

@@ -9,9 +9,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import ca.poutineqc.base.instantiable.PPlayer;
-import ca.poutineqc.base.lang.PMessages;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.Message;
+import ca.poutineqc.base.lang.PMessages;
 import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Utils;
@@ -20,18 +20,17 @@ public enum PCommand implements Command {
 
 	HELP("help", PMessages.HELP_HELP, "/%command% help [category] [page]", CommandType.GENERAL) {
 		@Override
-		public void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args,
-				Object... extra) {
+		public void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args) {
 
 			Language responseLanguage = Library.getLanguage(commandSender);
 
 			String header = Utils.color("&8&m" + StringUtils.repeat(" ", 15) + "&r&8| " + plugin.getPrimaryColor()
-					+ plugin.getName() + " " + plugin.getSecondaryColor()
-					+ ChatColor.stripColor(responseLanguage.getMessage(PMessages.KEYWORD_HELP)) + "&8|&m"
+					+ plugin.getDescription().getName() + " " + plugin.getSecondaryColor()
+					+ ChatColor.stripColor(responseLanguage.getMessage(plugin, PMessages.KEYWORD_HELP)) + "&8|&m"
 					+ StringUtils.repeat(" ", 35));
 
 			if (args.length == 1) {
-				sendGeneralHelp(commandSender, responseLanguage, cmdValue, header);
+				sendGeneralHelp(plugin, commandSender, responseLanguage, cmdValue, header);
 				return;
 			}
 
@@ -85,14 +84,15 @@ public enum PCommand implements Command {
 
 			commandSender.sendMessage(Utils.color(header));
 			commandSender.sendMessage(Utils.color(plugin.getPrimaryColor()
-					+ ChatColor.stripColor(responseLanguage.getMessage(PMessages.KEYWORD_HELP_CATEGORY)) + ": &7"
-					+ (commandType == null ? "ALL" : commandType.toString()) + ", " + plugin.getPrimaryColor()
-					+ ChatColor.stripColor(responseLanguage.getMessage(PMessages.KEYWORD_HELP_PAGE)) + ": &7"
+					+ ChatColor.stripColor(responseLanguage.getMessage(plugin, PMessages.KEYWORD_HELP_CATEGORY))
+					+ ": &7" + (commandType == null ? "ALL" : commandType.toString()) + ", " + plugin.getPrimaryColor()
+					+ ChatColor.stripColor(responseLanguage.getMessage(plugin, PMessages.KEYWORD_HELP_PAGE)) + ": &7"
 					+ String.valueOf(pageNumber) + "&8/&7" + (int) (Math.ceil((double) requestedCommands.size() / 3))));
 
 			if (pageNumber == 0) {
 				commandSender.sendMessage(ChatColor.RED
-						+ ChatColor.stripColor(responseLanguage.getMessage(PMessages.HELP_NO_PERMISSIONS)));
+						+ ChatColor.stripColor(responseLanguage.getMessage(plugin, PMessages.HELP_NO_PERMISSIONS)));
+				commandSender.sendMessage("\n");
 				return;
 			}
 
@@ -100,26 +100,26 @@ public enum PCommand implements Command {
 				commandSender.sendMessage(
 						plugin.getPrimaryColor() + requestedCommands.get(i).getUsage().replace("%command%", cmdValue));
 				commandSender.sendMessage(Utils.color(" &8- &7" + ChatColor
-						.stripColor(responseLanguage.getMessage(requestedCommands.get(i).getHelpMessage()))));
+						.stripColor(responseLanguage.getMessage(plugin, requestedCommands.get(i).getHelpMessage()))));
 			}
 
 			commandSender.sendMessage("\n");
 
 		}
 
-		private void sendGeneralHelp(CommandSender commandSender, Language responseLanguage, String cmdValue,
-				String header) {
+		private void sendGeneralHelp(PPlugin plugin, CommandSender commandSender, Language responseLanguage,
+				String cmdValue, String header) {
 			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', header));
-			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&5/" + cmdValue
-					+ " help general &8- " + responseLanguage.getMessage(PMessages.HELP_DESCRIPTION_GENERAL)));
-			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&5/" + cmdValue + " help player &8- "
-					+ responseLanguage.getMessage(PMessages.HELP_DESCRIPTION_PLAYER)));
-			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&5/" + cmdValue + " help setup &8- "
-					+ responseLanguage.getMessage(PMessages.HELP_DESCRIPTION_SETUP)));
-			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&5/" + cmdValue + " help admin &8- "
-					+ responseLanguage.getMessage(PMessages.HELP_DESCRIPTION_ADMIN)));
-			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&',
-					"&5/" + cmdValue + " help all &8- " + responseLanguage.getMessage(PMessages.HELP_DESCRIPTION_ALL)));
+			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getPrimaryColor() + "/" + cmdValue
+					+ " help general &8- " + responseLanguage.getMessage(plugin, PMessages.HELP_DESCRIPTION_GENERAL)));
+			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getPrimaryColor() + "/" + cmdValue + " help player &8- "
+					+ responseLanguage.getMessage(plugin, PMessages.HELP_DESCRIPTION_PLAYER)));
+			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getPrimaryColor() + "/" + cmdValue + " help setup &8- "
+					+ responseLanguage.getMessage(plugin, PMessages.HELP_DESCRIPTION_SETUP)));
+			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getPrimaryColor() + "/" + cmdValue + " help admin &8- "
+					+ responseLanguage.getMessage(plugin, PMessages.HELP_DESCRIPTION_ADMIN)));
+			commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getPrimaryColor() + "/" + cmdValue + " help all &8- "
+					+ responseLanguage.getMessage(plugin, PMessages.HELP_DESCRIPTION_ALL)));
 			commandSender.sendMessage("\n");
 			return;
 		}
@@ -132,11 +132,10 @@ public enum PCommand implements Command {
 						tabCompletion.add(category.name().toLowerCase());
 		}
 	},
-	LANGUAGE("lang", PMessages.HELP_LANGUAGE, "%plugin%.player.language", "/%command% language <language>",
+	LANGUAGE("language", PMessages.HELP_LANGUAGE, "%plugin%.player.language", "/%command% language <language>",
 			CommandType.GENERAL) {
 		@Override
-		public void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args,
-				Object... extra) {
+		public void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args) {
 			if (!(commandSender instanceof Player)) {
 				commandSender.sendMessage("You cannot use this command from here!");
 				return;
@@ -146,7 +145,8 @@ public enum PCommand implements Command {
 			Language responseLanguage = Library.getLanguage(player.getUniqueId());
 
 			if (args.length == 1) {
-				player.sendMessage(Utils.color(plugin.getPrimaryColor() + responseLanguage.getMessage(PMessages.LANGUAGE_LIST)));
+				player.sendMessage(Utils.color(
+						plugin.getPrimaryColor() + responseLanguage.getMessage(plugin, PMessages.LANGUAGE_LIST)));
 				for (Entry<String, Language> language : Library.getLanguageManager().entrySet())
 					player.sendMessage(plugin.getSecondaryColor() + "- " + language.getValue().getLanguageName());
 				return;
@@ -154,18 +154,18 @@ public enum PCommand implements Command {
 
 			Language language = Library.getLanguageManager().getLanguage(args[1]);
 			if (language == null) {
-				player.sendMessage(Utils
-						.color(responseLanguage.getMessage(PMessages.LANGUAGE_NOT_FOUND).replace("%cmd%", cmdValue)));
+				player.sendMessage(Utils.color(
+						responseLanguage.getMessage(plugin, PMessages.LANGUAGE_NOT_FOUND).replace("%cmd%", cmdValue)));
 				return;
 			}
 
 			PPlayer basePlayer = Library.getPPlayer(player.getUniqueId());
 			if (basePlayer == null) {
-				basePlayer = Library.newPPlayer(player.getUniqueId());
+				basePlayer = Library.newPPlayer(player);
 			}
-
+			
 			basePlayer.setLanguage(language);
-			basePlayer.sendMessage(PMessages.LANGUAGE_CHANGED);
+			basePlayer.sendMessage(plugin, PMessages.LANGUAGE_CHANGED);
 		}
 
 		@Override
@@ -179,16 +179,15 @@ public enum PCommand implements Command {
 
 	RELOAD("reload", PMessages.HELP_RELOAD, "%plugin%.admin.reload", "/%command% reload", CommandType.ADMIN) {
 		@Override
-		public void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args,
-				Object... extra) {
-			
+		public void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args) {
+
 			plugin.reload();
 
 			Language responseLanguage = (commandSender instanceof Player)
 					? Library.getLanguage(((Player) commandSender).getUniqueId())
 					: Library.getLanguageManager().getDefault();
 
-			commandSender.sendMessage(responseLanguage.getMessage(PMessages.RELOAD));
+			commandSender.sendMessage(responseLanguage.getMessage(plugin, PMessages.RELOAD));
 		}
 
 		@Override
@@ -236,7 +235,8 @@ public enum PCommand implements Command {
 
 	@Override
 	public boolean hasPermission(PPlugin plugin, CommandSender commandSender) {
-		return (permission != null) ? commandSender.hasPermission(permission.replace("%plugin%", plugin.getName().toLowerCase())) : true;
+		return (permission != null)
+				? commandSender.hasPermission(permission.replace("%plugin%", plugin.getDescription().getName().toLowerCase())) : true;
 	}
 
 	@Override
@@ -244,8 +244,7 @@ public enum PCommand implements Command {
 		return helpMessage;
 	}
 
-	public abstract void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args,
-			Object... extra);
+	public abstract void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args);
 
 	@Override
 	public abstract void complete(List<String> tabCompletion, String[] args);

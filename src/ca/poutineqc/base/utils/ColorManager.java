@@ -10,8 +10,9 @@ import org.bukkit.enchantments.Enchantment;
 
 import com.google.gson.JsonObject;
 
+import ca.poutineqc.base.data.UniversalSavableValue;
+import ca.poutineqc.base.data.values.SItem;
 import ca.poutineqc.base.data.values.SLong;
-import ca.poutineqc.base.data.values.UniversalSavableValue;
 
 public class ColorManager implements UniversalSavableValue {
 	private static final String PRIMAL_KEY = "value";
@@ -92,6 +93,11 @@ public class ColorManager implements UniversalSavableValue {
 	@Override
 	public String toSString() {
 		return colorIndice.toSString();
+	}
+
+	@Override
+	public String toString() {
+		return "ColorManager{indice=" + colorIndice + "}";
 	}
 
 	@Override

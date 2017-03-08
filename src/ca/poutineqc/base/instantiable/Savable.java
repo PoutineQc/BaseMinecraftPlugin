@@ -1,6 +1,5 @@
 package ca.poutineqc.base.instantiable;
 
-import java.util.List;
 import java.util.UUID;
 
 import ca.poutineqc.base.data.DataStorage;
@@ -30,14 +29,5 @@ public interface Savable {
 	 * @return the name of the Savable Object
 	 */
 	String getName();
-
-	/**
-	 * Returns a list of all the SavableParameter from a Savable object that can
-	 * be stored in a DataStorage
-	 * 
-	 * @return a list of all the SavableParameter from a Savable object
-	 * @see SavableParameter
-	 */
-	List<SavableParameter> getParameters();
 
 }

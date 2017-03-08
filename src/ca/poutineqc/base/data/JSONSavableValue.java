@@ -1,4 +1,4 @@
-package ca.poutineqc.base.data.values;
+package ca.poutineqc.base.data;
 
 import com.google.gson.JsonObject;
 

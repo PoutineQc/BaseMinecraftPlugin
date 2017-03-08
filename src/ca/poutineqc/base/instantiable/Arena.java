@@ -1,7 +1,6 @@
 package ca.poutineqc.base.instantiable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -12,17 +11,13 @@ import org.bukkit.World;
 import com.google.gson.JsonObject;
 
 import ca.poutineqc.base.data.DataStorage;
-import ca.poutineqc.base.data.JSON;
-import ca.poutineqc.base.data.MySQL;
-import ca.poutineqc.base.data.SQLite;
-import ca.poutineqc.base.data.YAML;
+import ca.poutineqc.base.data.JSONSavableValue;
+import ca.poutineqc.base.data.StringSavableValue;
 import ca.poutineqc.base.data.values.SInteger;
 import ca.poutineqc.base.data.values.SList;
 import ca.poutineqc.base.data.values.SLocation;
 import ca.poutineqc.base.data.values.SString;
 import ca.poutineqc.base.data.values.SUUID;
-import ca.poutineqc.base.data.values.StringSavableValue;
-import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.ColorManager;
 import ca.poutineqc.base.utils.Pair;
@@ -35,7 +30,7 @@ import ca.poutineqc.base.utils.PowerOfTwo;
  * @author Sébastien Chagnon
  *
  */
-public class Arena implements Savable {
+public class Arena implements Savable, JSONSavableValue {
 
 	// =========================================================================
 	// Static Fields
@@ -46,88 +41,13 @@ public class Arena implements Savable {
 	 */
 	public static final String TABLE_NAME = "ARENA";
 
-	protected static DataStorage data;
-
-	// =========================================================================
-	// Static Methods
-	// =========================================================================
-
-	/**
-	 * Checks if the DataStorage is instantiated. If it is not, instantiate it.
-	 * 
-	 * @param plugin
-	 *            the main class of the plugin
-	 * @see Library
-	 */
-	public static void checkDataStorage(PPlugin plugin) {
-		if (data == null) {
-			data = openDataStorage(plugin);
-
-			data.createTable(new ArrayList<SavableParameter>(Arrays.asList(Data.values())));
-		}
-	}
-
-	/**
-	 * Returns a list of all the different identifications saved in the
-	 * DataStorage. Returns null if there are no Savables saved in the
-	 * DataStorage.
-	 * 
-	 * @param plugin
-	 *            the main class of the plugin
-	 * @return a list of all the different identifications saved in the
-	 *         DataStorage
-	 * @see Library
-	 */
-	public static List<SUUID> getAllIdentifications(Library plugin) {
-		checkDataStorage(plugin);
-
-		return data.getAllIdentifications(Data.UUID);
-	}
-
-	/**
-	 * Returns an instance of a Data Storage. It's child class is determined by
-	 * a setting saved in the config.yml file.
-	 * 
-	 * @param plugin
-	 *            the main class of the plugin
-	 * @return an instance of a DataStorage
-	 * @see DataStorage
-	 * @see Library
-	 */
-	public static DataStorage openDataStorage(PPlugin plugin) {
-
-		switch (plugin.getConfig().getString("dataStorage").toLowerCase()) {
-		case "mysql":
-
-			data = new MySQL(plugin, getTableName());
-
-			break;
-		case "json":
-
-			data = new JSON(plugin, TABLE_NAME.toLowerCase(), false);
-
-			break;
-		case "yaml":
-		case "yml":
-
-			data = new YAML(plugin, TABLE_NAME.toLowerCase(), false);
-
-			break;
-		case "sqlite":
-		default:
-
-			data = new SQLite(plugin, getTableName());
-
-			break;
-		}
-
-		return data;
-	}
 
 	// =========================================================================
 	// Fields
 	// =========================================================================
 
+	private DataStorage data;
+	
 	final private SUUID uuid;
 	private SString name;
 
@@ -157,13 +77,13 @@ public class Arena implements Savable {
 	 *            the UUID of the new PArena
 	 * @see UUID
 	 */
-	public Arena(PPlugin plugin, UUID uuid) {
-
-		checkDataStorage(plugin);
+	public Arena(PPlugin plugin, DataStorage data, UUID uuid) {
+		
+		this.data = data;
 
 		this.uuid = new SUUID(uuid);
 
-		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, getParameters());
+		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, Data.values());
 		this.name = new SString(parameters.get(Data.NAME), PowerOfTwo.POWER_32);
 
 		this.minPoint = new SLocation(parameters.get(Data.MIN_POINT_X));
@@ -202,9 +122,9 @@ public class Arena implements Savable {
 
 	}
 
-	public Arena(Library plugin, String name, World world) {
-
-		checkDataStorage(plugin);
+	public Arena(PPlugin plugin, DataStorage data, String name, World world) {
+		
+		this.data = data;
 
 		this.uuid = new SUUID(UUID.randomUUID());
 		this.name = new SString(name, PowerOfTwo.POWER_32);
@@ -279,7 +199,7 @@ public class Arena implements Savable {
 	}
 
 	public Location getMinPoint() {
-		return minPoint;
+		return minPoint.getLocation();
 	}
 
 	public void setMinPoint(Location location) {
@@ -288,7 +208,7 @@ public class Arena implements Savable {
 	}
 
 	public Location getMaxPoint() {
-		return maxPoint;
+		return maxPoint.getLocation();
 	}
 
 	public void setMaxPoint(Location location) {
@@ -297,7 +217,7 @@ public class Arena implements Savable {
 	}
 
 	public Location getLobby() {
-		return lobby;
+		return lobby.getLocation();
 	}
 
 	public void setLobby(Location location) {
@@ -307,7 +227,7 @@ public class Arena implements Savable {
 	}
 
 	public Location getStart(int index) {
-		return start.get(index);
+		return start.get(index).getLocation();
 	}
 
 	public void addStart(Location location) {
@@ -317,7 +237,7 @@ public class Arena implements Savable {
 	}
 
 	public Location removeStart(int index) {
-		return start.get(index);
+		return start.get(index).getLocation();
 	}
 
 	public int getHighestScore() {
@@ -365,17 +285,49 @@ public class Arena implements Savable {
 		data.setStringSavableValue(Data.UUID, uuid, Data.COLOR_INDICE, this.colorManager);
 	}
 
+	@Override
+	public JsonObject toJsonObject() {
+		JsonObject json = new JsonObject();
+		json.add(Data.UUID.key, uuid.toJsonObject());
+		json.add(Data.NAME.key, name.toJsonObject());
+		json.add(Data.MIN_POINT_X.key, minPoint.toJsonObject());
+		json.add(Data.MAX_POINT_X.key, maxPoint.toJsonObject());
+		json.add(Data.LOBBY_X.key, uuid.toJsonObject());
+		json.add(Data.START_X.key, uuid.toJsonObject());
+		json.add(Data.HIGHEST_PLAYER.key, highestPlayer.toJsonObject());
+		json.add(Data.HIGHEST_SCORE.key, highestScore.toJsonObject());
+		json.add(Data.MIN_PLAYER.key, minPlayer.toJsonObject());
+		json.add(Data.MAX_PLAYER.key, maxPlayer.toJsonObject());
+		json.add(Data.COLOR_INDICE.key, colorManager.toJsonObject());
+		return json;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(Data.UUID.key + ":" + uuid.toString() + ", ");
+		sb.append(Data.NAME.key + ":" + name.toString() + ", ");
+		sb.append(Data.MIN_POINT_X.key + ":" + minPoint.toString() + ", ");
+		sb.append(Data.MAX_POINT_X.key + ":" + maxPoint.toString() + ", ");
+		sb.append(Data.LOBBY_X.key + ":" + uuid.toString() + ", ");
+		sb.append(Data.START_X.key + ":" + uuid.toString() + ", ");
+		sb.append(Data.HIGHEST_PLAYER.key + ":" + highestPlayer.toString() + ", ");
+		sb.append(Data.HIGHEST_SCORE.key + ":" + highestScore.toString() + ", ");
+		sb.append(Data.MIN_PLAYER.key + ":" + minPlayer.toString() + ", ");
+		sb.append(Data.MAX_PLAYER.key + ":" + maxPlayer.toString() + ", ");
+		sb.append(Data.COLOR_INDICE.key + ":" + colorManager.toString());
+		
+		
+		return "Arena:{}";
+	}
+
 	/*
 	 * * Data Enumeration * *
 	 *******************************************************/
-
-	@Override
-	public List<SavableParameter> getParameters() {
-		List<SavableParameter> returnValue = new ArrayList<SavableParameter>();
-		for (Data parameter : Data.values())
-			returnValue.add(parameter);
-
-		return returnValue;
+	
+	public static SavableParameter getIdentifier() {
+		return Data.UUID;
 	}
 
 	/**

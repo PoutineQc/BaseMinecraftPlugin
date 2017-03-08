@@ -1,7 +1,6 @@
 package ca.poutineqc.base.instantiable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -11,15 +10,12 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import ca.poutineqc.base.data.DataStorage;
-import ca.poutineqc.base.data.JSON;
-import ca.poutineqc.base.data.MySQL;
-import ca.poutineqc.base.data.SQLite;
-import ca.poutineqc.base.data.YAML;
+import ca.poutineqc.base.data.StringSavableValue;
 import ca.poutineqc.base.data.values.SUUID;
-import ca.poutineqc.base.data.values.StringSavableValue;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.Message;
 import ca.poutineqc.base.plugin.Library;
+import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Pair;
 
 public final class PPlayer implements Savable {
@@ -30,81 +26,7 @@ public final class PPlayer implements Savable {
 
 	public static final String TABLE_NAME = "Player";
 
-	private static DataStorage data;
-
-	// =========================================================================
-	// Static Methods
-	// =========================================================================
-
-	/**
-	 * Checks if the DataStorage is instantiated. If it is not, instantiate it.
-	 * 
-	 * @param plugin
-	 *            the main class of the plugin
-	 * @see Library
-	 */
-	public static void checkDataStorage(Library plugin) {
-		if (data == null)
-			data = openDataStorage(plugin);
-		
-		data.createTable(new ArrayList<SavableParameter>(Arrays.asList(Data.values())));
-	}
-
-	/**
-	 * Returns a list of all the different identifications saved in the
-	 * DataStorage. Returns null if there are no Savables saved in the
-	 * DataStorage.
-	 * 
-	 * @param plugin
-	 *            the main class of the plugin
-	 * @return a list of all the different identifications saved in the
-	 *         DataStorage
-	 * @see Library
-	 */
-	public static List<SUUID> getAllIdentifications(Library plugin) {
-		checkDataStorage(plugin);
-		return data.getAllIdentifications(Data.UUID);
-	}
-
-	/**
-	 * Returns an instance of a Data Storage. It's child class is determined by
-	 * a setting saved in the config.yml file.
-	 * 
-	 * @param plugin
-	 *            the main class of the plugin
-	 * @return an instance of a DataStorage
-	 * @see DataStorage
-	 * @see Library
-	 */
-	public static DataStorage openDataStorage(Library plugin) {
-
-		switch (plugin.getConfig().getString("dataStorage").toLowerCase()) {
-		case "mysql":
-
-			data = new MySQL(plugin, TABLE_NAME);
-
-			break;
-		case "json":
-
-			data = new JSON(plugin, TABLE_NAME.toLowerCase(), false);
-
-			break;
-		case "yaml":
-		case "yml":
-
-			data = new YAML(plugin, TABLE_NAME.toLowerCase(), false);
-
-			break;
-		case "sqlite":
-		default:
-
-			data = new SQLite(plugin, TABLE_NAME);
-
-			break;
-		}
-
-		return data;
-	}
+	private DataStorage data;
 
 	// =========================================================================
 	// Fields
@@ -130,14 +52,14 @@ public final class PPlayer implements Savable {
 	 * @see Library
 	 * @see UUID
 	 */
-	public PPlayer(Library plugin, UUID uuid) {
+	public PPlayer(PPlugin plugin, DataStorage data, UUID uuid) {
 
-		checkDataStorage(plugin);
+		this.data = data;
 
 		this.uuid = new SUUID(uuid);
 		this.player = Bukkit.getOfflinePlayer(uuid);
 
-		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, getParameters());
+		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, Data.values());
 
 		this.language = plugin.getLanguages().getLanguage(Language.getKey(parameters.get(Data.LANGUAGE)));
 
@@ -154,9 +76,9 @@ public final class PPlayer implements Savable {
 	 * @see Library
 	 * @see Player
 	 */
-	public PPlayer(Library plugin, Player player) {
+	public PPlayer(PPlugin plugin, DataStorage data, Player player) {
 
-		checkDataStorage(plugin);
+		this.data = data;
 
 		this.uuid = new SUUID(player.getUniqueId());
 		this.player = player;
@@ -186,6 +108,11 @@ public final class PPlayer implements Savable {
 		return language;
 	}
 
+	@Override
+	public String toString() {
+		return "PPlayer:{uuid:" + uuid + ",language:" + language + "}";
+	}
+
 	/**
 	 * Returns the Player managed by this instance
 	 * 
@@ -207,16 +134,19 @@ public final class PPlayer implements Savable {
 	 * @param message
 	 *            the Message to send
 	 */
-	public void sendMessage(Message message) {
-		language.sendMessage(getPlayer(), message);
+	public void sendMessage(PPlugin plugin, Message message) {
+		language.sendMessage(plugin, getPlayer(), message);
 	}
 
 	/*
 	 * * Data Enumeration * *
 	 *******************************************************/
 
-	@Override
-	public List<SavableParameter> getParameters() {
+	public static SavableParameter getIdentifications() {
+		return Data.UUID;
+	}
+
+	public static List<SavableParameter> getColumns() {
 		List<SavableParameter> returnValue = new ArrayList<SavableParameter>();
 
 		for (Data parameter : Data.values())
@@ -233,7 +163,7 @@ public final class PPlayer implements Savable {
 	 * @see SavableParameter
 	 */
 	private enum Data implements SavableParameter {
-		UUID("uuid", "511837cf-ff1b-41ff-a64a-87ab1aba419c"),
+		UUID("uuid", "00000000-0000-0000-0000-000000000000"),
 
 		LANGUAGE("language", "··············en");
 

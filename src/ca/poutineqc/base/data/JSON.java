@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
 import ca.poutineqc.base.data.values.SUUID;
-import ca.poutineqc.base.data.values.StringSavableValue;
 import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Pair;
@@ -101,10 +99,10 @@ public class JSON extends FlatFile {
 	}
 
 	@Override
-	public List<SUUID> getAllIdentifications(SavableParameter identification) {
-		List<SUUID> ids = new ArrayList<SUUID>();
+	public List<UUID> getAllIdentifications(SavableParameter identification, List<SavableParameter> columns) {
+		List<UUID> ids = new ArrayList<UUID>();
 		for (Entry<String, JsonElement> entry : json.entrySet())
-			ids.add(new SUUID(UUID.fromString(entry.getKey())));
+			ids.add(new SUUID(UUID.fromString(entry.getKey())).getUUID());
 
 		return ids;
 	}
@@ -123,7 +121,7 @@ public class JSON extends FlatFile {
 
 	@Override
 	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID uuid,
-			Collection<SavableParameter> parameters) {
+			SavableParameter[] parameters) {
 		Map<SavableParameter, String> individualData = new HashMap<SavableParameter, String>();
 		
 		JsonObject individualJson = json.get(uuid.getUUID().toString()).getAsJsonObject();
@@ -133,12 +131,21 @@ public class JSON extends FlatFile {
 		return individualData;
 	}
 
+	public void save(JsonObject json) {
+		this.json = json;
+		save();
+	}
+
 	private void save() {
 		try (FileWriter file = new FileWriter(this.file, false)) {
 			file.write(json.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public JsonObject getJsonObject() {
+		return json;
 	}
 
 }

@@ -2,6 +2,7 @@ package ca.poutineqc.base.plugin;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import ca.poutineqc.base.commands.CommandManager;
@@ -12,11 +13,12 @@ public interface PPlugin {
 	public ChatColor getPrimaryColor();
 	public ChatColor getSecondaryColor();
 	public boolean reload();
-	public String getName();
+	public PluginDescriptionFile getDescription();
 	public CommandManager getCommandManager();
 	public LanguagesManager getLanguages();
 	public ConfigurationSection getConfig();
 	public JavaPlugin get();
 	public boolean canBeReloaded();
+	public String getPrefix();
 	
 }

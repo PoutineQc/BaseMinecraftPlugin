@@ -2,16 +2,15 @@ package ca.poutineqc.base.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import ca.poutineqc.base.data.values.SUUID;
-import ca.poutineqc.base.data.values.StringSavableValue;
 import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PPlugin;
@@ -60,11 +59,11 @@ public class YAML extends FlatFile {
 	// =========================================================================
 
 	@Override
-	public List<SUUID> getAllIdentifications(SavableParameter identification) {
-		List<SUUID> identifications = new ArrayList<SUUID>();
+	public List<UUID> getAllIdentifications(SavableParameter identification, List<SavableParameter> columns) {
+		List<UUID> identifications = new ArrayList<UUID>();
 
 		for (String key : yaml.getKeys(false))
-			identifications.add(new SUUID(key));
+			identifications.add(new SUUID(key).getUUID());
 
 		return identifications;
 	}
@@ -79,7 +78,7 @@ public class YAML extends FlatFile {
 
 	@Override
 	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID uuid,
-			Collection<SavableParameter> parameters) {
+			SavableParameter[] parameters) {
 
 		Map<SavableParameter, String> user = new HashMap<SavableParameter, String>();
 
@@ -131,7 +130,7 @@ public class YAML extends FlatFile {
 	@Override
 	public void setStringSavableValue(SavableParameter identifier, SUUID uuid, SavableParameter parameter, StringSavableValue value) {
 		yaml.set(uuid.toSString() + "." + parameter.getKey(), value.toSString());
-
+		save();
 	}
 	
 	private void save() {

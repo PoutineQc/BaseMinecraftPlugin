@@ -1,4 +1,14 @@
 name: PouLib
 main: ca.poutineqc.base.plugin.Library
 version: 1.0
-description: Lib
+description: Library and Player/Language Management
+load: STARTUP
+author: PoutineQc
+database: true
+prefix: poulib
+softdepend : [Essentials]
+
+commands:
+  poulib:
+    description: PouLib commands
+    usage:  /<command>
