@@ -10,11 +10,11 @@ import org.bukkit.enchantments.Enchantment;
 
 import com.google.gson.JsonObject;
 
-import ca.poutineqc.base.data.UniversalSavableValue;
-import ca.poutineqc.base.data.values.SItem;
-import ca.poutineqc.base.data.values.SLong;
+import ca.poutineqc.base.datastorage.UniversalSerializable;
+import ca.poutineqc.base.datastorage.serializable.SLong;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItem;
 
-public class ColorManager implements UniversalSavableValue {
+public class ColorManager implements UniversalSerializable {
 	private static final String PRIMAL_KEY = "value";
 
 	public static final int MAX_STRING_LENGTH = SLong.MAX_STRING_LENGTH;
@@ -117,5 +117,25 @@ public class ColorManager implements UniversalSavableValue {
 		JsonObject json = new JsonObject();
 		json.addProperty(PRIMAL_KEY, colorIndice.getLong());
 		return json;
+	}
+
+	@Override
+	public String getSqlDataTypeName() {
+		return "VARCHAR(" + getMaxToStringLength() + ")";
+	}
+
+	@Override
+	public String pad(String toPad) {
+		return Utils.padLeft(toPad, getMaxToStringLength()).replace(' ', PAD_CHAR);
+	}
+
+	@Override
+	public String unpad(String toUnpad) {
+		return (toUnpad.replace(PAD_CHAR, ' ')).trim();
+	}
+
+	@Override
+	public boolean isSame(UniversalSerializable o) {
+		return toSString().equals(o.toSString());
 	}
 }

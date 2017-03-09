@@ -9,9 +9,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import ca.poutineqc.base.data.DataStorage;
-import ca.poutineqc.base.data.StringSavableValue;
-import ca.poutineqc.base.data.values.SUUID;
+import ca.poutineqc.base.datastorage.DataStorage;
+import ca.poutineqc.base.datastorage.StringSerializable;
+import ca.poutineqc.base.datastorage.serializable.SUUID;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.Message;
 import ca.poutineqc.base.plugin.Library;
@@ -61,7 +61,7 @@ public final class PPlayer implements Savable {
 
 		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, Data.values());
 
-		this.language = plugin.getLanguages().getLanguage(Language.getKey(parameters.get(Data.LANGUAGE)));
+		this.language = plugin.getLanguages().getLanguage(parameters.get(Data.LANGUAGE));
 
 	}
 
@@ -84,8 +84,8 @@ public final class PPlayer implements Savable {
 		this.player = player;
 		this.language = plugin.getLanguages().getDefault();
 
-		List<Pair<SavableParameter, StringSavableValue>> toSave = new ArrayList<Pair<SavableParameter, StringSavableValue>>();
-		toSave.add(new Pair<SavableParameter, StringSavableValue>(Data.LANGUAGE, this.language));
+		List<Pair<SavableParameter, StringSerializable>> toSave = new ArrayList<Pair<SavableParameter, StringSerializable>>();
+		toSave.add(new Pair<SavableParameter, StringSerializable>(Data.LANGUAGE, this.language));
 
 		data.newInstance(Data.UUID, uuid, toSave);
 	}

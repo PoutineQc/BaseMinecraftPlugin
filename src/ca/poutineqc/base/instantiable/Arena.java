@@ -10,14 +10,14 @@ import org.bukkit.World;
 
 import com.google.gson.JsonObject;
 
-import ca.poutineqc.base.data.DataStorage;
-import ca.poutineqc.base.data.JSONSavableValue;
-import ca.poutineqc.base.data.StringSavableValue;
-import ca.poutineqc.base.data.values.SInteger;
-import ca.poutineqc.base.data.values.SList;
-import ca.poutineqc.base.data.values.SLocation;
-import ca.poutineqc.base.data.values.SString;
-import ca.poutineqc.base.data.values.SUUID;
+import ca.poutineqc.base.datastorage.DataStorage;
+import ca.poutineqc.base.datastorage.JSONSerializable;
+import ca.poutineqc.base.datastorage.StringSerializable;
+import ca.poutineqc.base.datastorage.serializable.SInteger;
+import ca.poutineqc.base.datastorage.serializable.SList;
+import ca.poutineqc.base.datastorage.serializable.SLocation;
+import ca.poutineqc.base.datastorage.serializable.SString;
+import ca.poutineqc.base.datastorage.serializable.SUUID;
 import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.ColorManager;
 import ca.poutineqc.base.utils.Pair;
@@ -30,7 +30,7 @@ import ca.poutineqc.base.utils.PowerOfTwo;
  * @author Sébastien Chagnon
  *
  */
-public class Arena implements Savable, JSONSavableValue {
+public class Arena implements Savable, JSONSerializable {
 
 	// =========================================================================
 	// Static Fields
@@ -163,17 +163,17 @@ public class Arena implements Savable, JSONSavableValue {
 
 		this.colorManager = new ColorManager(Data.COLOR_INDICE.getDefaultValue());
 
-		List<Pair<SavableParameter, StringSavableValue>> createParameters = new ArrayList<Pair<SavableParameter, StringSavableValue>>();
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.NAME, this.name));
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.MIN_POINT_X, this.minPoint));
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.MAX_POINT_X, this.maxPoint));
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.LOBBY_X, this.lobby));
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.START_X, this.start));
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.HIGHEST_SCORE, this.highestScore));
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.HIGHEST_PLAYER, this.highestPlayer));
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.MIN_PLAYER, this.minPlayer));
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.MAX_PLAYER, this.maxPlayer));
-		createParameters.add(new Pair<SavableParameter, StringSavableValue>(Data.COLOR_INDICE, this.colorManager));
+		List<Pair<SavableParameter, StringSerializable>> createParameters = new ArrayList<Pair<SavableParameter, StringSerializable>>();
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.NAME, this.name));
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.MIN_POINT_X, this.minPoint));
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.MAX_POINT_X, this.maxPoint));
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.LOBBY_X, this.lobby));
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.START_X, this.start));
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.HIGHEST_SCORE, this.highestScore));
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.HIGHEST_PLAYER, this.highestPlayer));
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.MIN_PLAYER, this.minPlayer));
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.MAX_PLAYER, this.maxPlayer));
+		createParameters.add(new Pair<SavableParameter, StringSerializable>(Data.COLOR_INDICE, this.colorManager));
 		data.newInstance(Data.UUID, uuid, createParameters);
 
 	}

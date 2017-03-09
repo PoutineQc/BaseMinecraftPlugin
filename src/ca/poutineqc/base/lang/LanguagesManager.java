@@ -17,7 +17,7 @@ public abstract class LanguagesManager extends HashMap<String, Language> {
 	public abstract Collection<Message> getMessages();
 
 	public LanguagesManager(PPlugin plugin, String[] builtIn) {
-		for (String fileName : builtIn){
+		for (String fileName : builtIn) {
 			this.put(fileName, new Language(plugin, fileName, true, false));
 		}
 
@@ -34,7 +34,7 @@ public abstract class LanguagesManager extends HashMap<String, Language> {
 
 		for (Entry<String, Language> entry : this.entrySet())
 			entry.getValue().addMessages(getMessages());
-		
+
 	}
 
 	public boolean isLanguage(String fileName) {
@@ -52,6 +52,10 @@ public abstract class LanguagesManager extends HashMap<String, Language> {
 
 		for (Entry<String, Language> language : this.entrySet())
 			if (language.getValue().getLanguageName().equalsIgnoreCase(name))
+				return language.getValue();
+
+		for (Entry<String, Language> language : this.entrySet())
+			if (language.getKey().equals(language.getValue().unpad(name)))
 				return language.getValue();
 
 		return null;

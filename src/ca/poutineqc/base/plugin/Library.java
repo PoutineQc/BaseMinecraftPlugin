@@ -19,8 +19,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ca.poutineqc.base.commands.CommandListener;
 import ca.poutineqc.base.commands.CommandManager;
 import ca.poutineqc.base.commands.PCommand;
-import ca.poutineqc.base.data.DataStorage;
-import ca.poutineqc.base.data.values.SPlayer;
+import ca.poutineqc.base.datastorage.DataStorage;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemSign;
 import ca.poutineqc.base.instantiable.PPlayer;
 import ca.poutineqc.base.instantiable.SavableManager;
 import ca.poutineqc.base.instantiable.SavableParameter;
@@ -36,7 +36,7 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 
 	static final String ESSENTIALS_NAME = "Essentials";
 	private boolean essentialsEnabled = false;
-	
+
 	private List<PPlugin> observers;
 	private LanguagesManager languages;
 	private CommandManager commands;
@@ -52,40 +52,15 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 		this.players = newPlayerManager();
 
 		getCommand("poulib").setExecutor(new CommandListener(this));
-		
 
 		essentialsEnabled = Bukkit.getPluginManager().isPluginEnabled(ESSENTIALS_NAME);
-		
 
 		observers = new ArrayList<PPlugin>();
 		getServer().getPluginManager().registerEvents(this, this);
 
-//		ItemStack item = new ItemStack(Material.COMMAND);
-//
-//		BlockStateMeta meta = (BlockStateMeta) item.getItemMeta();
-//		CommandBlock state = (CommandBlock) meta.getBlockState();
-//
-//		System.out.println("1:'" + state.getCommand() + "'");
-//
-//		state.setCommand("minecraft:give @p minecraft:dirt");
-//		state.update();
-//
-//		System.out.println("2:'" + state.getCommand() + "'");
-//
-//		meta.setBlockState(state);
-//		meta.getBlockState().update();
-//
-//		System.out.println("3:'" + ((CommandBlock) meta.getBlockState()).getCommand() + "'");
-//
-//		item.setItemMeta(meta);
-//
-//		Bukkit.getPlayer("PoutineQc").getInventory().addItem(item);
-//		Bukkit.getPlayer("PoutineQc").updateInventory();
-		
-		
-		new SPlayer(Bukkit.getPlayer("PoutineQc")).apply(Bukkit.getPlayer("PoutineQc"));
-		
-		
+		SItemSign cb = new SItemSign();
+		cb.setLines(2, "I see you");
+		Bukkit.getPlayer("PoutineQc").getInventory().addItem(cb.getItem());
 	}
 
 	@Override
@@ -245,7 +220,7 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 	public static LanguagesManager getLanguageManager() {
 		return plugin.languages;
 	}
-	
+
 	public static boolean isEssentialsEnabled() {
 		return plugin.essentialsEnabled;
 	}

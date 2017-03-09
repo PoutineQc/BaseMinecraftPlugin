@@ -10,14 +10,14 @@ import org.bukkit.entity.Player;
 
 import com.google.gson.JsonObject;
 
-import ca.poutineqc.base.data.StringSavableValue;
-import ca.poutineqc.base.data.UniversalSavableValue;
-import ca.poutineqc.base.data.YAML;
+import ca.poutineqc.base.datastorage.UniversalSerializable;
+import ca.poutineqc.base.datastorage.YAML;
 import ca.poutineqc.base.plugin.Library;
 import ca.poutineqc.base.plugin.PConfigKey;
 import ca.poutineqc.base.plugin.PPlugin;
+import ca.poutineqc.base.utils.Utils;
 
-public class Language extends HashMap<Message, String> implements UniversalSavableValue {
+public class Language extends HashMap<Message, String> implements UniversalSerializable {
 
 	/**
 	 * 
@@ -98,10 +98,6 @@ public class Language extends HashMap<Message, String> implements UniversalSavab
 		return MAX_STRING_LENGTH;
 	}
 
-	public static String getKey(String value) {
-		return StringSavableValue.unpad(value);
-	}
-
 	public static String getKey(ConfigurationSection cs) {
 		return cs.getString(PRIMAL_KEY);
 	}
@@ -122,5 +118,25 @@ public class Language extends HashMap<Message, String> implements UniversalSavab
 		JsonObject json = new JsonObject();
 		json.addProperty(PRIMAL_KEY, serverLanguage ? LanguagesManager.DEFAULT : yamlFile.getFileName().replace(".yml", ""));
 		return json;
+	}
+
+	@Override
+	public String getSqlDataTypeName() {
+		return "VARCHAR(" + getMaxToStringLength() + ")";
+	}
+
+	@Override
+	public String pad(String toPad) {
+		return Utils.padLeft(toPad, getMaxToStringLength()).replace(' ', PAD_CHAR);
+	}
+
+	@Override
+	public String unpad(String toUnpad) {
+		return (toUnpad.replace(PAD_CHAR, ' ')).trim();
+	}
+
+	@Override
+	public boolean isSame(UniversalSerializable o) {
+		return toSString().equals(o.toSString());
 	}
 }

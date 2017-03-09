@@ -3,33 +3,33 @@ package ca.poutineqc.base.utils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
-import com.avaje.ebeaninternal.server.jmx.MAdminAutofetch;
 import com.google.gson.JsonObject;
 
-import ca.poutineqc.base.data.values.SItem;
-import ca.poutineqc.base.data.values.SItemBanner;
-import ca.poutineqc.base.data.values.SItemBeacon;
-import ca.poutineqc.base.data.values.SItemBook;
-import ca.poutineqc.base.data.values.SItemBrewingStand;
-import ca.poutineqc.base.data.values.SItemChest;
-import ca.poutineqc.base.data.values.SItemCommandBlock;
-import ca.poutineqc.base.data.values.SItemCreatureSpawner;
-import ca.poutineqc.base.data.values.SItemDispenser;
-import ca.poutineqc.base.data.values.SItemDropper;
-import ca.poutineqc.base.data.values.SItemEnchantedBook;
-import ca.poutineqc.base.data.values.SItemEnchantmentTable;
-import ca.poutineqc.base.data.values.SItemEndGateway;
-import ca.poutineqc.base.data.values.SItemFirework;
-import ca.poutineqc.base.data.values.SItemFireworkStar;
-import ca.poutineqc.base.data.values.SItemFurnace;
-import ca.poutineqc.base.data.values.SItemHead;
-import ca.poutineqc.base.data.values.SItemHopper;
-import ca.poutineqc.base.data.values.SItemJukebox;
-import ca.poutineqc.base.data.values.SItemLeatherArmour;
-import ca.poutineqc.base.data.values.SItemNoteBlock;
-import ca.poutineqc.base.data.values.SItemPotion;
-import ca.poutineqc.base.data.values.SItemShulkerBox;
-import ca.poutineqc.base.data.values.SItemSpawnEgg;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItem;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemBanner;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemBeacon;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemBook;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemBrewingStand;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemChest;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemCommandBlock;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemCreatureSpawner;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemDispenser;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemDropper;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemEnchantedBook;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemEnchantmentTable;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemEndGateway;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemFirework;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemFireworkStar;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemFurnace;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemHead;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemHopper;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemJukebox;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemLeatherArmour;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemNoteBlock;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemPotion;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemShulkerBox;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemSign;
+import ca.poutineqc.base.datastorage.serializable.sitems.SItemSpawnEgg;
 
 public class ItemStackManager {
 
@@ -83,6 +83,8 @@ public class ItemStackManager {
 			return new SItemNoteBlock(object);
 		case "SItemPotion":
 			return new SItemPotion(object);
+		case "SItemSign":
+			return new SItemSign(object);
 		case "SItemShulkerBox":
 			return new SItemShulkerBox(object);
 		case "SItemSpawnEgg":
@@ -141,6 +143,9 @@ public class ItemStackManager {
 		if (itemStack.getType().equals(Material.FURNACE))
 			return new SItemFurnace(itemStack);
 
+		if (itemStack.getType().equals(Material.SIGN))
+			return new SItemSign(itemStack);
+
 		if (itemStack.getType().equals(Material.SKULL_ITEM) && itemStack.getDurability() == 3)
 			return new SItemHead(itemStack);
 
@@ -180,9 +185,10 @@ public class ItemStackManager {
 				|| itemStack.getType().equals(Material.PURPLE_SHULKER_BOX)
 				|| itemStack.getType().equals(Material.SILVER_SHULKER_BOX)
 				|| itemStack.getType().equals(Material.BLACK_SHULKER_BOX))
+			return new SItemShulkerBox(itemStack);
 
-			if (itemStack.getType().equals(Material.MONSTER_EGG))
-				return new SItemSpawnEgg(itemStack);
+		if (itemStack.getType().equals(Material.MONSTER_EGG))
+			return new SItemSpawnEgg(itemStack);
 
 		return new SItem(itemStack);
 	}

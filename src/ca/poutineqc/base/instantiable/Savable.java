@@ -2,7 +2,7 @@ package ca.poutineqc.base.instantiable;
 
 import java.util.UUID;
 
-import ca.poutineqc.base.data.DataStorage;
+import ca.poutineqc.base.datastorage.DataStorage;
 
 /**
  * Represents an Object that can be saved in a DataStorage. These objects, to be

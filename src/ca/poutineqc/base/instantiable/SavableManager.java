@@ -5,11 +5,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
-import ca.poutineqc.base.data.DataStorage;
-import ca.poutineqc.base.data.JSON;
-import ca.poutineqc.base.data.MySQL;
-import ca.poutineqc.base.data.SQLite;
-import ca.poutineqc.base.data.YAML;
+import ca.poutineqc.base.datastorage.DataStorage;
+import ca.poutineqc.base.datastorage.JSON;
+import ca.poutineqc.base.datastorage.MySQL;
+import ca.poutineqc.base.datastorage.SQLite;
+import ca.poutineqc.base.datastorage.YAML;
 import ca.poutineqc.base.plugin.PPlugin;
 
 /**
