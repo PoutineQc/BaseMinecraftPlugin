@@ -16,6 +16,10 @@ public abstract class FlatFile implements DataStorage {
 		this.file = getFile(plugin, fileName, buildIn, folders);
 	}
 
+	public FlatFile(File file) {
+		this.file = file;
+	}
+
 	public String getFileName() {
 		return file.getName();
 	}
@@ -58,7 +62,7 @@ public abstract class FlatFile implements DataStorage {
 		return file;
 	}
 
-	private static File getFolder(PPlugin plugin, String... folderName2) {
+	public static File getFolder(PPlugin plugin, String... folderName2) {
 
 		File folder = plugin.get().getDataFolder();
 		for (String folderName : folderName2) {
@@ -79,6 +83,10 @@ public abstract class FlatFile implements DataStorage {
 		}
 
 		return path.toString();
+	}
+
+	public void delete() {
+		file.delete();
 	}
 
 

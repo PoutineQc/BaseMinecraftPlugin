@@ -31,6 +31,10 @@ public class SLocation implements UniversalSerializable {
 	private SFloat pitch;
 	private SFloat yaw;
 
+	public SLocation() {
+		this(null, 0, 0, 0, 0, 0);
+	}
+
 	public SLocation(World world, double x, double y, double z) {
 		this(world, x, y, z, 0, 0);
 	}

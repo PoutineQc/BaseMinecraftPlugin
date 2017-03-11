@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import ca.poutineqc.base.commands.inventories.PInventory;
 import ca.poutineqc.base.datastorage.DataStorage;
 import ca.poutineqc.base.datastorage.StringSerializable;
 import ca.poutineqc.base.datastorage.serializable.SUUID;
@@ -36,6 +37,7 @@ public final class PPlayer implements Savable {
 
 	private OfflinePlayer player;
 	private Language language;
+	private PInventory openedInventory;
 
 	// =========================================================================
 	// Constructors
@@ -190,5 +192,13 @@ public final class PPlayer implements Savable {
 		this.language = language;
 
 		data.setStringSavableValue(Data.UUID, uuid, Data.LANGUAGE, language);
+	}
+
+	public void setCurrentInventory(PInventory pInventory) {
+		openedInventory = pInventory;
+	}
+
+	public PInventory getCurrentInventory() {
+		return openedInventory;
 	}
 }

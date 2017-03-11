@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import com.google.gson.JsonObject;
 
@@ -42,44 +42,61 @@ public class Language extends HashMap<Message, String> implements UniversalSeria
 
 	Language(Language defaultLanguage) {
 		this.putAll(defaultLanguage);
-		
+
 		this.prefixBeforeEveryMessage = defaultLanguage.prefixBeforeEveryMessage;
-		
+
 		this.serverLanguage = true;
 		this.yamlFile = defaultLanguage.yamlFile;
 	}
 
-	public String getMessage(PPlugin plugin, Message message) {
-		if (this.containsKey(message))
-			return this.get(message).replaceAll("%p%", "&" + plugin.getPrimaryColor().getChar()).replaceAll("%s%",
-					"&" + plugin.getSecondaryColor().getChar());
-		else
-			return Library.getLanguageManager().getDefault().get(message)
-					.replaceAll("%p%", "&" + plugin.getPrimaryColor().getChar())
+	public void addMessages(PPlugin plugin, Collection<Message> messages) {
+		for (Message message : messages) {
+			String rawMessage = yamlFile.getYAML().getString(message.getKey(), message.getDefaultMessage());
+
+			String refinedMessage = rawMessage.replaceAll("%p%", "&" + plugin.getPrimaryColor().getChar())
 					.replaceAll("%s%", "&" + plugin.getSecondaryColor().getChar());
+
+			this.put(message, Utils.color(refinedMessage));
+		}
 	}
 
-	public void sendMessage(PPlugin plugin, Player player, Message message) {
-		sendMessage(plugin, player, getMessage(plugin, message));
+	@Override
+	public String get(Object key) {
+		if (!(key instanceof Message))
+			throw new IllegalArgumentException("The key must be a Message");
+			
+		Message message = (Message) key;
+		if (this.containsKey(message))
+			return super.get(message);
+		else
+			return Library.getLanguageManager().getDefault().get(message);
 	}
 
-	public void sendMessage(PPlugin plugin, Player player, String message) {
+	public void sendError(PPlugin plugin, CommandSender player, String string) {
+		sendMessage(plugin, player, ChatColor.RED + ChatColor.stripColor(string));
+	}
+
+	public void sendError(PPlugin plugin, CommandSender player, Message message) {
+		sendError(plugin, player, this.get(message));
+		
+	}
+
+	public void sendMessage(PPlugin plugin, CommandSender player, Message message) {
+		sendMessage(plugin, player, get(message));
+	}
+
+	public void sendMessage(PPlugin plugin, CommandSender player, String message) {
 		if (prefixBeforeEveryMessage)
 			player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-					getMessage(plugin, PMessages.PREFIX).replace("%plugin%", plugin.getPrefix()) + " " + message));
+					get(PMessages.PREFIX).replace("%plugin%", plugin.getPrefix()) + " " + message));
 		else
 			player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
 	}
 
-	public void addMessages(Collection<Message> messages) {
-		for (Message message : messages)
-			this.put(message, yamlFile.getYAML().getString(message.getKey(), message.getDefaultMessage()));
-	}
-
 	public String getLanguageName() {
-		if (this.serverLanguage) 
+		if (this.serverLanguage)
 			return ChatColor.stripColor(this.get(PMessages.KEYWORD_SERVER));
-			
+
 		return ChatColor.stripColor(this.get(PMessages.LANGUAGE_NAME));
 	}
 
@@ -95,11 +112,13 @@ public class Language extends HashMap<Message, String> implements UniversalSeria
 
 	@Override
 	public int getMaxToStringLength() {
+		
 		return MAX_STRING_LENGTH;
 	}
 
 	public static String getKey(ConfigurationSection cs) {
 		return cs.getString(PRIMAL_KEY);
+		
 	}
 
 	@Override
@@ -116,7 +135,8 @@ public class Language extends HashMap<Message, String> implements UniversalSeria
 	@Override
 	public JsonObject toJsonObject() {
 		JsonObject json = new JsonObject();
-		json.addProperty(PRIMAL_KEY, serverLanguage ? LanguagesManager.DEFAULT : yamlFile.getFileName().replace(".yml", ""));
+		json.addProperty(PRIMAL_KEY,
+				serverLanguage ? LanguagesManager.DEFAULT : yamlFile.getFileName().replace(".yml", ""));
 		return json;
 	}
 

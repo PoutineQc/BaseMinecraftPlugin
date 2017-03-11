@@ -55,6 +55,7 @@ public class Arena implements Savable, JSONSerializable {
 	private SLocation maxPoint;
 	private SLocation lobby;
 	private SList<SLocation> start;
+	private SLocation spectate;
 
 	private SInteger highestScore;
 	private SString highestPlayer;
@@ -62,6 +63,10 @@ public class Arena implements Savable, JSONSerializable {
 	private SInteger maxPlayer;
 
 	private ColorManager colorManager;
+
+
+
+
 
 	// =========================================================================
 	// Constructors
@@ -111,6 +116,7 @@ public class Arena implements Savable, JSONSerializable {
 				return new SLocation(value);
 			}
 		};
+		this.spectate = new SLocation(parameters.get(Data.SPECTATE));
 
 		this.highestScore = new SInteger(parameters.get(Data.HIGHEST_SCORE));
 		this.highestPlayer = new SString(parameters.get(Data.HIGHEST_PLAYER), PowerOfTwo.POWER_64);
@@ -154,6 +160,7 @@ public class Arena implements Savable, JSONSerializable {
 				return new SLocation(value);
 			}
 		};
+		this.spectate = new SLocation(Data.SPECTATE.getDefaultValue());
 
 		this.highestScore = new SInteger(Data.HIGHEST_SCORE.getDefaultValue());
 		this.highestPlayer = new SString(Data.HIGHEST_PLAYER.getDefaultValue(), PowerOfTwo.POWER_64);
@@ -230,14 +237,16 @@ public class Arena implements Savable, JSONSerializable {
 		return start.get(index).getLocation();
 	}
 
-	public void addStart(Location location) {
-		start.add(new SLocation(location));
-
-		data.setStringSavableValue(Data.UUID, uuid, Data.START_X, start);
+	public void setStart(int index, Location location) {
+		start.set(index, location == null ? new SLocation() : new SLocation(location));
 	}
 
-	public Location removeStart(int index) {
-		return start.get(index).getLocation();
+	public void setSpectate(Location location) {
+		spectate = new SLocation(location);
+	}
+
+	public Location getSpectate() {
+		return spectate.getLocation();
 	}
 
 	public int getHighestScore() {

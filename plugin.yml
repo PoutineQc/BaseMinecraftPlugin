@@ -4,9 +4,8 @@ version: 1.0
 description: Library and Player/Language Management
 load: STARTUP
 author: PoutineQc
-database: true
 prefix: poulib
-softdepend : [Essentials]
+softdepend : [Essentials, WorldEdit]
 
 commands:
   poulib:

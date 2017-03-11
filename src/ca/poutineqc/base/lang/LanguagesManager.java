@@ -33,7 +33,7 @@ public abstract class LanguagesManager extends HashMap<String, Language> {
 		this.put(DEFAULT, new Language(defaultLanguage));
 
 		for (Entry<String, Language> entry : this.entrySet())
-			entry.getValue().addMessages(getMessages());
+			entry.getValue().addMessages(plugin, getMessages());
 
 	}
 

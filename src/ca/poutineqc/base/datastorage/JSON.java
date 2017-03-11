@@ -1,5 +1,6 @@
 package ca.poutineqc.base.datastorage;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -28,17 +29,24 @@ public class JSON extends FlatFile {
 
 	public JSON(PPlugin plugin, String fileName, boolean buildIn, String... folders) {
 		super(plugin, fileName.replace(".json", "") + ".json", buildIn, folders);
+		json = getJson();
+	}
 
+	public JSON(File file) {
+		super(file);
+		json = getJson();
+
+	}
+
+	private JsonObject getJson() {
 		try {
 			JsonElement jsonelement = new JsonParser().parse(new FileReader(file));
-			if (jsonelement.isJsonNull())
-				jsonelement = new JsonObject();
-			
-			json = jsonelement.getAsJsonObject();
+			return jsonelement.getAsJsonObject();
+
 		} catch (JsonIOException | JsonSyntaxException | FileNotFoundException e) {
 			e.printStackTrace();
+			return new JsonObject();
 		}
-		
 	}
 
 	@Override
@@ -111,10 +119,10 @@ public class JSON extends FlatFile {
 	public void newInstance(SavableParameter identification, SUUID uuid,
 			List<Pair<SavableParameter, StringSerializable>> createParameters) {
 		JsonObject savable = new JsonObject();
-		
+
 		for (Pair<SavableParameter, StringSerializable> parameter : createParameters)
 			savable.addProperty(parameter.getKey().getKey(), parameter.getValue().toSString());
-		
+
 		json.add(uuid.getUUID().toString(), savable);
 		save();
 	}
@@ -123,11 +131,11 @@ public class JSON extends FlatFile {
 	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID uuid,
 			SavableParameter[] parameters) {
 		Map<SavableParameter, String> individualData = new HashMap<SavableParameter, String>();
-		
+
 		JsonObject individualJson = json.get(uuid.getUUID().toString()).getAsJsonObject();
 		for (SavableParameter parameter : parameters)
 			individualData.put(parameter, individualJson.get(parameter.getKey()).getAsString());
-		
+
 		return individualData;
 	}
 

@@ -26,8 +26,10 @@ public interface Command {
 
 	void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args);
 
-	void complete(List<String> tabCompletion, String[] args);
+	void complete(PPlugin plugin, List<String> tabCompletion, String[] args);
 
+	String getName();
+	
 	Message getHelpMessage();
 
 	String getUsage();
@@ -37,5 +39,6 @@ public interface Command {
 	boolean isOfType(CommandType commandType);
 
 	boolean hasPermission(PPlugin plugin, CommandSender commandSender);
+
 
 }
