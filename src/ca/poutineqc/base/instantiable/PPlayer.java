@@ -161,13 +161,13 @@ public final class PPlayer implements Savable {
 	 * Represents all the Parameters from a BasePlayer that may be saved in a
 	 * DataStorage.
 	 * 
-	 * @author Sébastien Chagnon
+	 * @author SÖ…bastien Chagnon
 	 * @see SavableParameter
 	 */
 	private enum Data implements SavableParameter {
 		UUID("uuid", "00000000-0000-0000-0000-000000000000"),
 
-		LANGUAGE("language", "··············en");
+		LANGUAGE("language", "Ö…Ö…Ö…Ö…Ö…Ö…Ö…Ö…Ö…Ö…Ö…Ö…Ö…Ö…en");
 
 		private String key;
 		private String defaultValue;

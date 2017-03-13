@@ -2,7 +2,7 @@ package ca.poutineqc.base.datastorage;
 
 public interface StringSerializable {
 
-	static final char PAD_CHAR = '·';
+	static final char PAD_CHAR = 'Ö…';
 	
 	String toSString();
 	

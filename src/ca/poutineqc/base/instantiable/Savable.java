@@ -9,7 +9,7 @@ import ca.poutineqc.base.datastorage.DataStorage;
  * stored in a DataStorage, must have a UUID and a name to ease the handling of
  * the Savable instances.
  * 
- * @author Sébastien Chagnon
+ * @author Sebastien Chagnon
  * @see DataStorage
  * @see UUID
  */

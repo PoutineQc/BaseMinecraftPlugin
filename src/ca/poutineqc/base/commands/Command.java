@@ -9,7 +9,7 @@ import ca.poutineqc.base.plugin.PPlugin;
 
 /**
  * A Command is something that can be executed by players
- * @author Sébastien Chagnon
+ * @author Sebastien Chagnon
  *
  */
 public interface Command {
@@ -17,7 +17,7 @@ public interface Command {
 	/**
 	 * Represents the different type of commands that can be used.
 	 * 
-	 * @author Sébastien Chagnon
+	 * @author Sebastien Chagnon
 	 *
 	 */
 	public enum CommandType {

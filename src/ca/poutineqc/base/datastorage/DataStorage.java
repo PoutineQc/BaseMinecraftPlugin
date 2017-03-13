@@ -18,7 +18,7 @@ import ca.poutineqc.base.utils.Pair;
  * and should only be used for creation of new Objects at the beginning of the
  * program. Instances may be added to the DataStorage but not removed.
  * 
- * @author Sébastien Chagnon
+ * @author Sebastien Chagnon
  * @see Savable
  * @see Pair
  * @see SavableParameter

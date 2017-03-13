@@ -20,7 +20,7 @@ import ca.poutineqc.base.utils.Pair;
  * A FlatFile that is used to store data on. It can read or write Data. It
  * implements DataStorage.
  * 
- * @author Sébastien Chagnon
+ * @author Sebastien Chagnon
  * @see DataStorage
  */
 public class YAML extends FlatFile {

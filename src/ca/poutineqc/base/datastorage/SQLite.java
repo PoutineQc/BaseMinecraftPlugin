@@ -14,7 +14,7 @@ import ca.poutineqc.base.plugin.PPlugin;
  * A SQLite connection to a Database. Used to store data on it and read data
  * from it. Can only be accessed locally. All the data is stored on a .sql file.
  * 
- * @author Sébastien Chagnon
+ * @author Sebastien Chagnon
  * @see Database
  * @see DataStorage
  * @see Connection

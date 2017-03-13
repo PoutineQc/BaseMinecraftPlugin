@@ -17,7 +17,7 @@ import ca.poutineqc.base.plugin.PPlugin;
  * From this manager, it is possible to add or remove items, and get them based
  * on their UUID and name that can be accessed from the Savable insterface.
  *
- * @author Sébastien Chagnon
+ * @author Sebastien Chagnon
  * @see Savable
  */
 public abstract class SavableManager<T extends Savable> extends LinkedList<T> {

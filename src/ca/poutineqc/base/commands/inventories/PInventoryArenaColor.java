@@ -104,7 +104,7 @@ public class PInventoryArenaColor extends PInventory {
 		if (action == InventoryAction.PICKUP_HALF) {
 			game.getArena().setStart(index, null);
 			local.sendMessage(plugin, pPlayer.getPlayer(), local.get(PMessages.START_REMOVE)
-					.replace("%arena%", game.getArena().getName()).replace("%number%", String.valueOf(index)));
+					.replace("%arena%", game.getArena().getName()).replace("%number%", String.valueOf(index))); 
 		} else {
 			game.getArena().setStart(index, pPlayer.getPlayer().getLocation());
 			local.sendMessage(plugin, pPlayer.getPlayer(), local.get(PMessages.START_ADD)

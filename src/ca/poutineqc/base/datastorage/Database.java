@@ -22,7 +22,7 @@ import ca.poutineqc.base.utils.Pair;
  * Represents a SQL Database. Can load and maintain a connection, sent queries
  * and receive ResultSets.
  * 
- * @author Sébastien Chagnon
+ * @author Sebastien Chagnon
  */
 public abstract class Database implements DataStorage {
 
