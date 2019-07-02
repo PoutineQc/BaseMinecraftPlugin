@@ -1,0 +1,13 @@
+name: ProLib
+main: ca.sebastienchagnon.minecraft.prolib.Library
+version: 1.0
+description: Sebastien Chagnon's plugin library
+load: STARTUP
+author: PoutineQc
+prefix: PLib
+softdepend : [Essentials, WorldEdit]
+
+commands:
+  poulib:
+    description: ProLib commands
+    usage:  /<command>
