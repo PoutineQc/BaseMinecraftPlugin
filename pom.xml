@@ -8,6 +8,7 @@
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jar.target>${project.basedir}/target</jar.target>
   </properties>
   
   <repositories>
@@ -64,6 +65,15 @@
     <sourceDirectory>src/main/java</sourceDirectory>
     
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3.1</version>
+        <configuration>
+          <outputDirectory>${jar.target}</outputDirectory>
+        </configuration>
+      </plugin>
+      
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.0</version>
