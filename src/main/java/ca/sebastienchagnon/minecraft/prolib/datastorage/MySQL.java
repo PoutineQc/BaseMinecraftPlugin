@@ -43,7 +43,6 @@ public class MySQL extends Database {
 		String password = plugin.getConfig().getString(PConfigKey.DB_PASS.getKey());
 		String database = plugin.getConfig().getString(PConfigKey.DB_DB.getKey());
 		
-
 		try {
 			Connection conn = DriverManager.getConnection(
 					"jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true&useSSL=false", user, password);
