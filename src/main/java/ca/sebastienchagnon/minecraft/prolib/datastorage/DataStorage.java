@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 
-import ca.sebastienchagnon.minecraft.prolib.datastorage.serializable.SUUID;
 import ca.sebastienchagnon.minecraft.prolib.instantiable.Savable;
 import ca.sebastienchagnon.minecraft.prolib.instantiable.SavableParameter;
 import ca.sebastienchagnon.minecraft.prolib.utils.Pair;
@@ -45,7 +44,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setString(SavableParameter identification, SUUID uuid, SavableParameter parameter, String value);
+	void setString(SavableParameter identification, UUID uuid, SavableParameter parameter, String value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -66,7 +65,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setInt(SavableParameter identification, SUUID uuid, SavableParameter parameter, int value);
+	void setInt(SavableParameter identification, UUID uuid, SavableParameter parameter, int value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -87,7 +86,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setDouble(SavableParameter identification, SUUID uuid, SavableParameter parameter, double value);
+	void setDouble(SavableParameter identification, UUID uuid, SavableParameter parameter, double value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -108,7 +107,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setLong(SavableParameter identification, SUUID uuid, SavableParameter parameter, long value);
+	void setLong(SavableParameter identification, UUID uuid, SavableParameter parameter, long value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -129,7 +128,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setBoolean(SavableParameter identification, SUUID uuid, SavableParameter parameter, boolean value);
+	void setBoolean(SavableParameter identification, UUID uuid, SavableParameter parameter, boolean value);
 
 	/**
 	 * Sets the value of the parameter to the required value for the savable
@@ -150,9 +149,9 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void setFloat(SavableParameter identification, SUUID uuid, SavableParameter parameter, float value);
+	void setFloat(SavableParameter identification, UUID uuid, SavableParameter parameter, float value);
 
-	void setStringSavableValue(SavableParameter identifier, SUUID uuid, SavableParameter parameter, StringSerializable value);
+	void setStringSavableValue(SavableParameter identifier, UUID uuid, SavableParameter parameter, StringSerializable value);
 
 	/**
 	 * Returns a list of all the identifications in the DataStorage. The
@@ -187,8 +186,8 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	void newInstance(SavableParameter identification, SUUID uuid, List<Pair<SavableParameter, StringSerializable>> createParameters);
-	void deleteInstance(SavableParameter identification, SUUID uuid);
+	void newInstance(SavableParameter identification, UUID uuid, List<Pair<SavableParameter, StringSerializable>> createParameters);
+	void deleteInstance(SavableParameter identification, UUID uuid);
 
 	/**
 	 * Returns all the data requested in the parameters parameter's List from
@@ -209,7 +208,7 @@ public interface DataStorage {
 	 * @see SavableParameter
 	 * @see UUID
 	 */
-	Map<SavableParameter, String> getIndividualData(SavableParameter parameter, SUUID uuid,
+	Map<SavableParameter, String> getIndividualData(SavableParameter parameter, UUID uuid,
 			List<SavableParameter> columns);
 
 

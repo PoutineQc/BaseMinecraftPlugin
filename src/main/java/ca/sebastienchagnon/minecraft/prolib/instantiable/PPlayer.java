@@ -15,8 +15,6 @@ import ca.sebastienchagnon.minecraft.prolib.PPlugin;
 import ca.sebastienchagnon.minecraft.prolib.commands.inventories.PInventory;
 import ca.sebastienchagnon.minecraft.prolib.datastorage.DataStorage;
 import ca.sebastienchagnon.minecraft.prolib.datastorage.StringSerializable;
-import ca.sebastienchagnon.minecraft.prolib.datastorage.serializable.SBoolean;
-import ca.sebastienchagnon.minecraft.prolib.datastorage.serializable.SUUID;
 import ca.sebastienchagnon.minecraft.prolib.lang.Language;
 import ca.sebastienchagnon.minecraft.prolib.lang.Message;
 import ca.sebastienchagnon.minecraft.prolib.utils.Pair;
@@ -35,13 +33,13 @@ public final class PPlayer implements Savable {
 	// Fields
 	// =========================================================================
 
-	private final SUUID uuid;
+	private final UUID uuid;
 
 	private OfflinePlayer player;
 	private Language language;
 	private PInventory openedInventory;
 
-	private SBoolean reduceLag;
+	private boolean reduceLag;
 
 	// =========================================================================
 	// Constructors
@@ -62,13 +60,12 @@ public final class PPlayer implements Savable {
 
 		this.data = data;
 
-		this.uuid = new SUUID(uuid);
+		this.uuid = uuid;
 		this.player = Bukkit.getOfflinePlayer(uuid);
 
 		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, PPlayer.getColumns());
 
 		this.language = plugin.getLanguages().getLanguage(parameters.get(Data.LANGUAGE));
-		this.reduceLag = new SBoolean(parameters.get(Data.REDUCE_LAG));
 
 	}
 
@@ -87,14 +84,12 @@ public final class PPlayer implements Savable {
 
 		this.data = data;
 
-		this.uuid = new SUUID(player.getUniqueId());
+		this.uuid = player.getUniqueId();
 		this.player = player;
 		this.language = plugin.getLanguages().getDefault();
-		this.reduceLag = new SBoolean(false);
 
 		List<Pair<SavableParameter, StringSerializable>> toSave = new ArrayList<Pair<SavableParameter, StringSerializable>>();
 		toSave.add(new Pair<SavableParameter, StringSerializable>(Data.LANGUAGE, this.language));
-		toSave.add(new Pair<SavableParameter, StringSerializable>(Data.REDUCE_LAG, this.reduceLag));
 
 		data.newInstance(Data.UUID, uuid, toSave);
 	}
@@ -105,7 +100,7 @@ public final class PPlayer implements Savable {
 
 	@Override
 	public UUID getUUID() {
-		return uuid.getUUID();
+		return this.uuid;
 	}
 
 	@Override
@@ -115,16 +110,6 @@ public final class PPlayer implements Savable {
 
 	public Language getLanguage() {
 		return language;
-	}
-
-	public boolean hasReduceLag() {
-		return reduceLag.getBoolean();
-	}
-
-	public void setReduceLag(boolean reduceLag) {
-		this.reduceLag = new SBoolean(reduceLag);
-		
-		data.setStringSavableValue(Data.UUID, uuid, Data.REDUCE_LAG, this.reduceLag);
 	}
 
 	@Override
@@ -179,9 +164,7 @@ public final class PPlayer implements Savable {
 	private enum Data implements SavableParameter {
 		UUID("uuid", "00000000-0000-0000-0000-000000000000"),
 
-		LANGUAGE("language", "**************en"),
-		
-		REDUCE_LAG("reduceLag", "0");
+		LANGUAGE("language", "**************en");
 
 		private String key;
 		private String defaultValue;

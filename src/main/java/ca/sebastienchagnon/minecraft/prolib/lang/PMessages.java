@@ -57,11 +57,7 @@ public enum PMessages implements Message {
 	// NO
 	KEYWORD_GUI_PAGE("keywordGuiPage", "Page %number%"),
 	
-	HELP_LAG("helpLag", "Toggle the lag reduction in minigames"),
-	
-	DESACTIVATE_LAG("desactivateLag", "&eLag reduction in minigames desactivated."),
-	
-	ACTIVATE_LAG("activateLag", "&eLag reduction in minigames activated.");
+	HELP_LAG("helpLag", "Toggle the lag reduction in minigames");
 
 	private String key;
 	private String defaultValue;

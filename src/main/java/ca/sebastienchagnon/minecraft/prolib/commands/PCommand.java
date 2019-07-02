@@ -177,18 +177,9 @@ public enum PCommand implements Command {
 			Verify.isPlayer(commandSender, "You cannot use this command from here!");
 
 			Player player = (Player) commandSender;
-			Language responseLanguage = Library.getLanguage(player.getUniqueId());
 			PPlayer basePlayer = Library.getPPlayer(player.getUniqueId());
 			if (basePlayer == null)
 				basePlayer = Library.newPPlayer(player);
-			
-			if (basePlayer.hasReduceLag()) {
-				basePlayer.setReduceLag(false);
-				responseLanguage.sendMessage(plugin, player, PMessages.DESACTIVATE_LAG);
-			} else {
-				basePlayer.setReduceLag(true);
-				responseLanguage.sendMessage(plugin, player, PMessages.ACTIVATE_LAG);
-			}
 		}
 
 		@Override

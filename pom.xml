@@ -8,7 +8,7 @@
   
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jar.target>${project.basedir}/target</jar.target>
+    <jar.target>${project.build.directory}</jar.target>
   </properties>
   
   <repositories>

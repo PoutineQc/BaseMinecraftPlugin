@@ -12,7 +12,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import ca.sebastienchagnon.minecraft.prolib.Library;
 import ca.sebastienchagnon.minecraft.prolib.PPlugin;
-import ca.sebastienchagnon.minecraft.prolib.datastorage.serializable.SUUID;
 import ca.sebastienchagnon.minecraft.prolib.instantiable.SavableParameter;
 import ca.sebastienchagnon.minecraft.prolib.utils.Pair;
 
@@ -63,13 +62,13 @@ public class YAML extends FlatFile {
 		List<UUID> identifications = new ArrayList<UUID>();
 
 		for (String key : yaml.getKeys(false))
-			identifications.add(new SUUID(key).getUUID());
+			identifications.add(UUID.fromString(key));
 
 		return identifications;
 	}
 
 	@Override
-	public void newInstance(SavableParameter identification, SUUID uuid,
+	public void newInstance(SavableParameter identification, UUID uuid,
 			List<Pair<SavableParameter, StringSerializable>> createParameters) {
 		for (Pair<SavableParameter, StringSerializable> entry : createParameters)
 			setStringSavableValue(identification, uuid, entry.getKey(), entry.getValue());
@@ -77,18 +76,18 @@ public class YAML extends FlatFile {
 	}
 
 	@Override
-	public void deleteInstance(SavableParameter identification, SUUID uuid) {
-		this.yaml.set(uuid.getUUID().toString(), null);
+	public void deleteInstance(SavableParameter identification, UUID uuid) {
+		this.yaml.set(uuid.toString(), null);
 		save();
 	}
 
 	@Override
-	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID uuid,
+	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, UUID uuid,
 			List<SavableParameter> columns) {
 
 		Map<SavableParameter, String> user = new HashMap<SavableParameter, String>();
 
-		ConfigurationSection cs = yaml.getConfigurationSection(uuid.toSString());
+		ConfigurationSection cs = yaml.getConfigurationSection(uuid.toString());
 
 		for (SavableParameter parameter : columns) {
 			user.put(parameter, cs.getString(parameter.getKey()));
@@ -98,45 +97,45 @@ public class YAML extends FlatFile {
 	}
 
 	@Override
-	public void setString(SavableParameter identification, SUUID uuid, SavableParameter parameter, String value) {
-		yaml.set(uuid.toSString() + "." + parameter.getKey(), value);
+	public void setString(SavableParameter identification, UUID uuid, SavableParameter parameter, String value) {
+		yaml.set(uuid.toString() + "." + parameter.getKey(), value);
 		save();
 	}
 
 	@Override
-	public void setInt(SavableParameter identification, SUUID uuid, SavableParameter parameter, int value) {
-		yaml.set(uuid.toSString() + "." + parameter.getKey(), value);
+	public void setInt(SavableParameter identification, UUID uuid, SavableParameter parameter, int value) {
+		yaml.set(uuid.toString() + "." + parameter.getKey(), value);
 		save();
 	}
 
 	@Override
-	public void setDouble(SavableParameter identification, SUUID uuid, SavableParameter parameter, double value) {
-		yaml.set(uuid.toSString() + "." + parameter.getKey(), value);
+	public void setDouble(SavableParameter identification, UUID uuid, SavableParameter parameter, double value) {
+		yaml.set(uuid.toString() + "." + parameter.getKey(), value);
 		save();
 	}
 
 	@Override
-	public void setLong(SavableParameter identification, SUUID uuid, SavableParameter parameter, long value) {
-		yaml.set(uuid.toSString() + "." + parameter.getKey(), value);
+	public void setLong(SavableParameter identification, UUID uuid, SavableParameter parameter, long value) {
+		yaml.set(uuid.toString() + "." + parameter.getKey(), value);
 		save();
 	}
 
 	@Override
-	public void setBoolean(SavableParameter identification, SUUID uuid, SavableParameter parameter, boolean value) {
-		yaml.set(uuid.toSString() + "." + parameter.getKey(), value);
+	public void setBoolean(SavableParameter identification, UUID uuid, SavableParameter parameter, boolean value) {
+		yaml.set(uuid.toString() + "." + parameter.getKey(), value);
 		save();
 	}
 
 	@Override
-	public void setFloat(SavableParameter identification, SUUID uuid, SavableParameter parameter, float value) {
-		yaml.set(uuid.toSString() + "." + parameter.getKey(), value);
+	public void setFloat(SavableParameter identification, UUID uuid, SavableParameter parameter, float value) {
+		yaml.set(uuid.toString() + "." + parameter.getKey(), value);
 		save();
 	}
 
 	@Override
-	public void setStringSavableValue(SavableParameter identifier, SUUID uuid, SavableParameter parameter,
+	public void setStringSavableValue(SavableParameter identifier, UUID uuid, SavableParameter parameter,
 			StringSerializable value) {
-		yaml.set(uuid.toSString() + "." + parameter.getKey(), value.toSString());
+		yaml.set(uuid.toString() + "." + parameter.getKey(), value.toSString());
 		save();
 	}
 

@@ -14,7 +14,6 @@ import java.util.logging.Level;
 import ca.sebastienchagnon.minecraft.prolib.Library;
 import ca.sebastienchagnon.minecraft.prolib.PConfigKey;
 import ca.sebastienchagnon.minecraft.prolib.PPlugin;
-import ca.sebastienchagnon.minecraft.prolib.datastorage.serializable.SUUID;
 import ca.sebastienchagnon.minecraft.prolib.instantiable.SavableParameter;
 import ca.sebastienchagnon.minecraft.prolib.utils.Pair;
 
@@ -122,7 +121,7 @@ public abstract class Database implements DataStorage {
 		return builder.toString().substring(0, builder.length() - 2) + ")";
 	}
 
-	private String getNewInstanceQuery(SavableParameter identification, SUUID uuid,
+	private String getNewInstanceQuery(SavableParameter identification, UUID uuid,
 			List<Pair<SavableParameter, StringSerializable>> createParameters) {
 		StringBuilder sb = new StringBuilder("INSERT INTO ");
 
@@ -138,7 +137,7 @@ public abstract class Database implements DataStorage {
 
 		sb.append(") VALUES ('");
 
-		sb.append(uuid.toSString());
+		sb.append(uuid.toString());
 		sb.append("'");
 
 		for (int i = 0; i < createParameters.size(); i++) {
@@ -153,14 +152,14 @@ public abstract class Database implements DataStorage {
 		return sb.toString();
 	}
 
-	private String getDeleteInstnceQuery(SavableParameter identification, SUUID uuid) {
+	private String getDeleteInstnceQuery(SavableParameter identification, UUID uuid) {
 		StringBuilder sb = new StringBuilder("DELETE FROM ");
 
 		sb.append(tableName);
 		sb.append(" WHERE ");
 		sb.append(identification.getKey());
 		sb.append("='");
-		sb.append(uuid.toSString());
+		sb.append(uuid.toString());
 		sb.append("';");
 
 		return sb.toString();
@@ -171,13 +170,13 @@ public abstract class Database implements DataStorage {
 	// =========================================================================
 
 	@Override
-	public void newInstance(SavableParameter identification, SUUID uuid,
+	public void newInstance(SavableParameter identification, UUID uuid,
 			List<Pair<SavableParameter, StringSerializable>> createParameters) {
 		update(getNewInstanceQuery(identification, uuid, createParameters), false);
 	}
 
 	@Override
-	public void deleteInstance(SavableParameter identification, SUUID uuid) {
+	public void deleteInstance(SavableParameter identification, UUID uuid) {
 		update(getDeleteInstnceQuery(identification, uuid), false);
 	}
 
@@ -199,7 +198,7 @@ public abstract class Database implements DataStorage {
 				ResultSet resultSet = ps.executeQuery()) {
 
 			while (resultSet.next()) {
-				identifications.add(new SUUID(resultSet.getString(identification.getKey())).getUUID());
+				identifications.add(UUID.fromString(resultSet.getString(identification.getKey())));
 			}
 
 		} catch (SQLException ex) {
@@ -210,10 +209,10 @@ public abstract class Database implements DataStorage {
 	}
 
 	@Override
-	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID id,
+	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, UUID id,
 			List<SavableParameter> columns) {
 
-		String query = "SELECT * FROM " + tableName + " WHERE " + identification.getKey() + "='" + id.toSString()
+		String query = "SELECT * FROM " + tableName + " WHERE " + identification.getKey() + "='" + id.toString()
 				+ "';";
 
 		try (Connection connection = getSQLConnection();
@@ -246,45 +245,45 @@ public abstract class Database implements DataStorage {
 	// }
 
 	@Override
-	public void setString(SavableParameter identification, SUUID uuid, SavableParameter parameter, String value) {
+	public void setString(SavableParameter identification, UUID uuid, SavableParameter parameter, String value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setInt(SavableParameter identification, SUUID uuid, SavableParameter parameter, int value) {
+	public void setInt(SavableParameter identification, UUID uuid, SavableParameter parameter, int value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setDouble(SavableParameter identification, SUUID uuid, SavableParameter parameter, double value) {
+	public void setDouble(SavableParameter identification, UUID uuid, SavableParameter parameter, double value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setLong(SavableParameter identification, SUUID uuid, SavableParameter parameter, long value) {
+	public void setLong(SavableParameter identification, UUID uuid, SavableParameter parameter, long value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setBoolean(SavableParameter identification, SUUID uuid, SavableParameter parameter, boolean value) {
+	public void setBoolean(SavableParameter identification, UUID uuid, SavableParameter parameter, boolean value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
 	@Override
-	public void setFloat(SavableParameter identification, SUUID uuid, SavableParameter parameter, float value) {
+	public void setFloat(SavableParameter identification, UUID uuid, SavableParameter parameter, float value) {
 		setValue(identification, uuid, parameter, value);
 	}
 
-	private <T> void setValue(SavableParameter identification, SUUID uuid, SavableParameter parameter, T value) {
+	private <T> void setValue(SavableParameter identification, UUID uuid, SavableParameter parameter, T value) {
 		update("UPDATE " + tableName + " SET `" + parameter.getKey() + "`='" + value.toString() + "' WHERE "
-				+ identification.getKey() + "='" + uuid.toSString() + "';", false);
+				+ identification.getKey() + "='" + uuid.toString() + "';", false);
 	}
 
 	@Override
-	public void setStringSavableValue(SavableParameter identifier, SUUID uuid, SavableParameter parameter,
+	public void setStringSavableValue(SavableParameter identifier, UUID uuid, SavableParameter parameter,
 			StringSerializable value) {
 		update("UPDATE " + tableName + " SET `" + parameter.getKey() + "`='" + value.toSString() + "' WHERE "
-				+ identifier.getKey() + "='" + uuid.toSString() + "';", false);
+				+ identifier.getKey() + "='" + uuid.toString() + "';", false);
 	}
 
 }
