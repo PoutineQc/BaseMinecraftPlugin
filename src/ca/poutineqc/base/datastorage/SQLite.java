@@ -7,8 +7,8 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-import ca.poutineqc.base.plugin.PConfigKey;
-import ca.poutineqc.base.plugin.PPlugin;
+import ca.poutineqc.base.PConfigKey;
+import ca.poutineqc.base.PPlugin;
 
 /**
  * A SQLite connection to a Database. Used to store data on it and read data

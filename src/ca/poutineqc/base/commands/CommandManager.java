@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.bukkit.command.CommandSender;
 
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.commands.Command.CommandType;
-import ca.poutineqc.base.plugin.PPlugin;
 
 public class CommandManager {
 
@@ -17,7 +17,7 @@ public class CommandManager {
 		this.commands = new ArrayList<Command>();
 	}
 
-	public void addCommand(PCommand command) {
+	public void addCommand(Command command) {
 		commands.add(command);
 	}
 	

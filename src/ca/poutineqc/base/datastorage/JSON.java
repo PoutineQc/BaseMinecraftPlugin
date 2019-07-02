@@ -18,9 +18,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.datastorage.serializable.SUUID;
 import ca.poutineqc.base.instantiable.SavableParameter;
-import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Pair;
 
 public class JSON extends FlatFile {
@@ -39,13 +39,21 @@ public class JSON extends FlatFile {
 	}
 
 	private JsonObject getJson() {
+		FileReader reader = null;
 		try {
-			JsonElement jsonelement = new JsonParser().parse(new FileReader(file));
+			reader = new FileReader(file);
+			JsonElement jsonelement = new JsonParser().parse(reader);
 			return jsonelement.getAsJsonObject();
 
-		} catch (JsonIOException | JsonSyntaxException | FileNotFoundException e) {
-			e.printStackTrace();
+		} catch (IllegalStateException | JsonIOException | JsonSyntaxException | FileNotFoundException e) {
 			return new JsonObject();
+		} finally {
+			if (reader != null)
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 	}
 
@@ -128,13 +136,25 @@ public class JSON extends FlatFile {
 	}
 
 	@Override
+	public void deleteInstance(SavableParameter identification, SUUID uuid) {
+		if (json.has(uuid.getUUID().toString()))
+			json.remove(uuid.getUUID().toString());
+		
+		save();
+	}
+
+	@Override
 	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID uuid,
-			SavableParameter[] parameters) {
+			List<SavableParameter> columns) {
 		Map<SavableParameter, String> individualData = new HashMap<SavableParameter, String>();
 
 		JsonObject individualJson = json.get(uuid.getUUID().toString()).getAsJsonObject();
-		for (SavableParameter parameter : parameters)
+		for (SavableParameter parameter : columns) {
+			if (identification.equals(parameter))
+				continue;
+
 			individualData.put(parameter, individualJson.get(parameter.getKey()).getAsString());
+		}
 
 		return individualData;
 	}
@@ -145,11 +165,17 @@ public class JSON extends FlatFile {
 	}
 
 	private void save() {
-		try (FileWriter file = new FileWriter(this.file, false)) {
-			file.write(json.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try (FileWriter writer = new FileWriter(file, false)) {
+					writer.write(json.toString());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 
 	public JsonObject getJsonObject() {

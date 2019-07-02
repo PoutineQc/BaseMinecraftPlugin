@@ -41,7 +41,7 @@ public abstract class SList<T extends UniversalSerializable> extends ArrayList<T
 
 	public SList(String values, PowerOfTwo pt) throws OutOfMemoryError {
 		super(pt.getPower());
-
+		
 		this.exponent = pt.getExponent();
 
 		if (getMaxToStringLength() > 21844)
@@ -51,6 +51,7 @@ public abstract class SList<T extends UniversalSerializable> extends ArrayList<T
 	}
 
 	public SList(PowerOfTwo pt) throws OutOfMemoryError {
+		super(pt.getPower());
 
 		this.exponent = pt.getExponent();
 
@@ -135,7 +136,7 @@ public abstract class SList<T extends UniversalSerializable> extends ArrayList<T
 		for (int i = 0; i < amountToDeserialize; i++) {
 			int startPos = i * getElementMaxStringLength();
 			String sString = values.substring(startPos, startPos + getElementMaxStringLength());
-			this.add(convert(sString));
+			this.add(i, convert(sString));
 		}
 	}
 

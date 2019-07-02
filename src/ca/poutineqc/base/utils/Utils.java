@@ -47,4 +47,8 @@ public class Utils {
 
 		return block;
 	}
+
+	public static String stripAll(String toStrip) {
+		return ChatColor.stripColor(color(toStrip));
+	}
 }

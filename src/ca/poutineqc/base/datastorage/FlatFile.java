@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 import org.bukkit.Bukkit;
 
-import ca.poutineqc.base.plugin.PPlugin;
+import ca.poutineqc.base.PPlugin;
 
 public abstract class FlatFile implements DataStorage {
 
@@ -65,6 +65,9 @@ public abstract class FlatFile implements DataStorage {
 	public static File getFolder(PPlugin plugin, String... folderName2) {
 
 		File folder = plugin.get().getDataFolder();
+		if (!folder.exists())
+			folder.mkdir();
+		
 		for (String folderName : folderName2) {
 			folder = new File(folder, folderName);
 			if (!folder.exists())

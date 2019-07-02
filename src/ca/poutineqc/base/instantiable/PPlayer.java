@@ -1,6 +1,7 @@
 package ca.poutineqc.base.instantiable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -9,14 +10,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import ca.poutineqc.base.Library;
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.commands.inventories.PInventory;
 import ca.poutineqc.base.datastorage.DataStorage;
 import ca.poutineqc.base.datastorage.StringSerializable;
+import ca.poutineqc.base.datastorage.serializable.SBoolean;
 import ca.poutineqc.base.datastorage.serializable.SUUID;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.Message;
-import ca.poutineqc.base.plugin.Library;
-import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Pair;
 
 public final class PPlayer implements Savable {
@@ -38,6 +40,8 @@ public final class PPlayer implements Savable {
 	private OfflinePlayer player;
 	private Language language;
 	private PInventory openedInventory;
+
+	private SBoolean reduceLag;
 
 	// =========================================================================
 	// Constructors
@@ -61,9 +65,10 @@ public final class PPlayer implements Savable {
 		this.uuid = new SUUID(uuid);
 		this.player = Bukkit.getOfflinePlayer(uuid);
 
-		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, Data.values());
+		Map<SavableParameter, String> parameters = data.getIndividualData(Data.UUID, this.uuid, PPlayer.getColumns());
 
 		this.language = plugin.getLanguages().getLanguage(parameters.get(Data.LANGUAGE));
+		this.reduceLag = new SBoolean(parameters.get(Data.REDUCE_LAG));
 
 	}
 
@@ -85,9 +90,11 @@ public final class PPlayer implements Savable {
 		this.uuid = new SUUID(player.getUniqueId());
 		this.player = player;
 		this.language = plugin.getLanguages().getDefault();
+		this.reduceLag = new SBoolean(false);
 
 		List<Pair<SavableParameter, StringSerializable>> toSave = new ArrayList<Pair<SavableParameter, StringSerializable>>();
 		toSave.add(new Pair<SavableParameter, StringSerializable>(Data.LANGUAGE, this.language));
+		toSave.add(new Pair<SavableParameter, StringSerializable>(Data.REDUCE_LAG, this.reduceLag));
 
 		data.newInstance(Data.UUID, uuid, toSave);
 	}
@@ -110,9 +117,19 @@ public final class PPlayer implements Savable {
 		return language;
 	}
 
+	public boolean hasReduceLag() {
+		return reduceLag.getBoolean();
+	}
+
+	public void setReduceLag(boolean reduceLag) {
+		this.reduceLag = new SBoolean(reduceLag);
+		
+		data.setStringSavableValue(Data.UUID, uuid, Data.REDUCE_LAG, this.reduceLag);
+	}
+
 	@Override
 	public String toString() {
-		return "PPlayer:{uuid:" + uuid + ",language:" + language + "}";
+		return "PPlayer:{uuid:" + uuid + ",language:" + language + ",reduceLag:" + reduceLag + "}";
 	}
 
 	/**
@@ -144,30 +161,27 @@ public final class PPlayer implements Savable {
 	 * * Data Enumeration * *
 	 *******************************************************/
 
-	public static SavableParameter getIdentifications() {
+	public static SavableParameter getIdentification() {
 		return Data.UUID;
 	}
 
 	public static List<SavableParameter> getColumns() {
-		List<SavableParameter> returnValue = new ArrayList<SavableParameter>();
-
-		for (Data parameter : Data.values())
-			returnValue.add(parameter);
-
-		return returnValue;
+		return new ArrayList<SavableParameter>(Arrays.asList(Data.values()));
 	}
 
 	/**
 	 * Represents all the Parameters from a BasePlayer that may be saved in a
 	 * DataStorage.
 	 * 
-	 * @author Sօbastien Chagnon
+	 * @author S*bastien Chagnon
 	 * @see SavableParameter
 	 */
 	private enum Data implements SavableParameter {
 		UUID("uuid", "00000000-0000-0000-0000-000000000000"),
 
-		LANGUAGE("language", "օօօօօօօօօօօօօօen");
+		LANGUAGE("language", "**************en"),
+		
+		REDUCE_LAG("reduceLag", "0");
 
 		private String key;
 		private String defaultValue;

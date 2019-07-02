@@ -11,11 +11,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import ca.poutineqc.base.Library;
+import ca.poutineqc.base.PConfigKey;
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.datastorage.serializable.SUUID;
 import ca.poutineqc.base.instantiable.SavableParameter;
-import ca.poutineqc.base.plugin.Library;
-import ca.poutineqc.base.plugin.PConfigKey;
-import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Pair;
 
 /**
@@ -62,8 +62,8 @@ public abstract class Database implements DataStorage {
 	public Database(PPlugin plugin, String tableName) {
 
 		this.plugin = plugin;
-		this.tableName = plugin.getConfig().getString(PConfigKey.DB_TABLE_PREFIX.getKey(), plugin.getDescription().getName() + "_")
-				+ tableName;
+		this.tableName = plugin.getConfig().getString(PConfigKey.DB_TABLE_PREFIX.getKey(),
+				plugin.getDescription().getName() + "_") + tableName;
 
 	}
 
@@ -78,11 +78,28 @@ public abstract class Database implements DataStorage {
 	 * @param qry
 	 *            - the query that will be send to the Database
 	 */
-	public void update(String qry) {
-		try (Connection connection = getSQLConnection(); PreparedStatement ps = connection.prepareStatement(qry)) {
-			ps.execute();
-		} catch (SQLException ex) {
-			plugin.get().getLogger().log(Level.SEVERE, "Couldn't execute SQL statement: ", ex);
+	public void update(final String qry, boolean wait) {
+
+		if (wait) {
+			try (Connection connection = getSQLConnection(); PreparedStatement ps = connection.prepareStatement(qry)) {
+				ps.execute();
+			} catch (SQLException ex) {
+				plugin.get().getLogger().log(Level.SEVERE, "Couldn't execute SQL statement: ", ex);
+			}
+
+		} else {
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					try (Connection connection = getSQLConnection();
+							PreparedStatement ps = connection.prepareStatement(qry)) {
+						ps.execute();
+					} catch (SQLException ex) {
+						plugin.get().getLogger().log(Level.SEVERE, "Couldn't execute SQL statement: ", ex);
+					}
+				}
+			}).start();
 		}
 	}
 
@@ -101,7 +118,7 @@ public abstract class Database implements DataStorage {
 					+ parameter.getDefaultValue() + "'");
 			builder.append(", ");
 		}
-		
+
 		return builder.toString().substring(0, builder.length() - 2) + ")";
 	}
 
@@ -136,6 +153,19 @@ public abstract class Database implements DataStorage {
 		return sb.toString();
 	}
 
+	private String getDeleteInstnceQuery(SavableParameter identification, SUUID uuid) {
+		StringBuilder sb = new StringBuilder("DELETE FROM ");
+
+		sb.append(tableName);
+		sb.append(" WHERE ");
+		sb.append(identification.getKey());
+		sb.append("='");
+		sb.append(uuid.toSString());
+		sb.append("';");
+
+		return sb.toString();
+	}
+
 	// =========================================================================
 	// Database Accessors
 	// =========================================================================
@@ -143,18 +173,23 @@ public abstract class Database implements DataStorage {
 	@Override
 	public void newInstance(SavableParameter identification, SUUID uuid,
 			List<Pair<SavableParameter, StringSerializable>> createParameters) {
-		update(getNewInstanceQuery(identification, uuid, createParameters));
+		update(getNewInstanceQuery(identification, uuid, createParameters), false);
+	}
+
+	@Override
+	public void deleteInstance(SavableParameter identification, SUUID uuid) {
+		update(getDeleteInstnceQuery(identification, uuid), false);
 	}
 
 	private void createTable(List<SavableParameter> createParameters) {
-		update(getCreateTableQuery(createParameters));
+		update(getCreateTableQuery(createParameters), true);
 	}
 
 	@Override
 	public List<UUID> getAllIdentifications(SavableParameter identification, List<SavableParameter> columns) {
-		
+
 		createTable(columns);
-		
+
 		List<UUID> identifications = new ArrayList<UUID>();
 
 		String query = "SELECT * FROM " + tableName;
@@ -176,7 +211,7 @@ public abstract class Database implements DataStorage {
 
 	@Override
 	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID id,
-			SavableParameter[] parameters) {
+			List<SavableParameter> columns) {
 
 		String query = "SELECT * FROM " + tableName + " WHERE " + identification.getKey() + "='" + id.toSString()
 				+ "';";
@@ -188,7 +223,7 @@ public abstract class Database implements DataStorage {
 			while (resultSet.next()) {
 				Map<SavableParameter, String> user = new HashMap<SavableParameter, String>();
 
-				for (SavableParameter parameter : parameters)
+				for (SavableParameter parameter : columns)
 					user.put(parameter, resultSet.getString(parameter.getKey()));
 
 				return user;
@@ -242,14 +277,14 @@ public abstract class Database implements DataStorage {
 
 	private <T> void setValue(SavableParameter identification, SUUID uuid, SavableParameter parameter, T value) {
 		update("UPDATE " + tableName + " SET `" + parameter.getKey() + "`='" + value.toString() + "' WHERE "
-				+ identification.getKey() + "='" + uuid.toSString() + "';");
+				+ identification.getKey() + "='" + uuid.toSString() + "';", false);
 	}
 
 	@Override
 	public void setStringSavableValue(SavableParameter identifier, SUUID uuid, SavableParameter parameter,
 			StringSerializable value) {
 		update("UPDATE " + tableName + " SET `" + parameter.getKey() + "`='" + value.toSString() + "' WHERE "
-				+ identifier.getKey() + "='" + uuid.toSString() + "';");
+				+ identifier.getKey() + "='" + uuid.toSString() + "';", false);
 	}
 
 }

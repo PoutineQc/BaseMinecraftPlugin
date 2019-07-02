@@ -4,13 +4,16 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.DataFormatException;
 
+import org.bukkit.plugin.java.JavaPlugin;
+
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.datastorage.DataStorage;
 import ca.poutineqc.base.datastorage.JSON;
 import ca.poutineqc.base.datastorage.MySQL;
 import ca.poutineqc.base.datastorage.SQLite;
 import ca.poutineqc.base.datastorage.YAML;
-import ca.poutineqc.base.plugin.PPlugin;
 
 /**
  * A manager that contains an array of Object that extend the interface Savable.
@@ -27,6 +30,7 @@ public abstract class SavableManager<T extends Savable> extends LinkedList<T> {
 	 */
 	private static final long serialVersionUID = -5816468850208714331L;
 
+	protected PPlugin plugin;
 	private DataStorage data;
 
 	private Collection<UUID> savedInstances;
@@ -35,32 +39,43 @@ public abstract class SavableManager<T extends Savable> extends LinkedList<T> {
 	 * Creates an empty manager.
 	 */
 	public SavableManager(PPlugin plugin, String tableName, boolean loadSavedInstances) {
-
+		this.plugin = plugin;
 		data = openDataStorage(plugin, tableName);
-
+		
 		this.savedInstances = data.getAllIdentifications(getIdentification(), getColumns());
 
 		if (loadSavedInstances)
 			for (UUID id : savedInstances)
-				this.add(newInstance(data, id));
+				try {
+					this.add(newInstance(plugin.get(), data, id));
+				} catch (DataFormatException e) {
+					continue;
+				}
 
 	}
 
-	public void loadIfSaved(UUID uuid) {
-		if (savedInstances.contains(uuid))
-			this.add(newInstance(data, uuid));
+	public boolean loadIfSaved(UUID uuid) {
+		if (savedInstances.contains(uuid) && get(uuid) == null) {
+			try {
+				this.add(newInstance(plugin.get(), data, uuid));
+			} catch (Exception e) {
+				return false;
+			}
+			return true;
+		}
+		return false;
 	}
 
-	public void removeIfHandled(UUID uuid) {
+	public boolean removeIfHandled(UUID uuid) {
 		T instance = get(uuid);
-		this.remove(instance);
+		return this.remove(instance);
 	}
 
 	public DataStorage getDataStorage() {
 		return data;
 	}
 
-	public abstract T newInstance(DataStorage data, UUID uuid);
+	public abstract T newInstance(JavaPlugin plugin, DataStorage data, UUID uuid) throws DataFormatException;
 
 	@Override
 	public boolean add(T e) {

@@ -10,10 +10,10 @@ import java.util.UUID;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import ca.poutineqc.base.Library;
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.datastorage.serializable.SUUID;
 import ca.poutineqc.base.instantiable.SavableParameter;
-import ca.poutineqc.base.plugin.Library;
-import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Pair;
 
 /**
@@ -49,9 +49,9 @@ public class YAML extends FlatFile {
 	 */
 	public YAML(PPlugin plugin, String fileName, boolean buildIn, String... folderName) {
 		super(plugin, fileName.replace(".yml", "") + ".yml", buildIn, folderName);
-		
+
 		yaml = YamlConfiguration.loadConfiguration(file);
-		
+
 	}
 
 	// =========================================================================
@@ -77,14 +77,20 @@ public class YAML extends FlatFile {
 	}
 
 	@Override
+	public void deleteInstance(SavableParameter identification, SUUID uuid) {
+		this.yaml.set(uuid.getUUID().toString(), null);
+		save();
+	}
+
+	@Override
 	public Map<SavableParameter, String> getIndividualData(SavableParameter identification, SUUID uuid,
-			SavableParameter[] parameters) {
+			List<SavableParameter> columns) {
 
 		Map<SavableParameter, String> user = new HashMap<SavableParameter, String>();
 
 		ConfigurationSection cs = yaml.getConfigurationSection(uuid.toSString());
 
-		for (SavableParameter parameter : parameters) {
+		for (SavableParameter parameter : columns) {
 			user.put(parameter, cs.getString(parameter.getKey()));
 		}
 
@@ -128,17 +134,25 @@ public class YAML extends FlatFile {
 	}
 
 	@Override
-	public void setStringSavableValue(SavableParameter identifier, SUUID uuid, SavableParameter parameter, StringSerializable value) {
+	public void setStringSavableValue(SavableParameter identifier, SUUID uuid, SavableParameter parameter,
+			StringSerializable value) {
 		yaml.set(uuid.toSString() + "." + parameter.getKey(), value.toSString());
 		save();
 	}
-	
-	private void save() {
-		try {
-			yaml.save(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+	public void save() {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					yaml.save(file);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
 	}
 
 	public ConfigurationSection getYAML() {

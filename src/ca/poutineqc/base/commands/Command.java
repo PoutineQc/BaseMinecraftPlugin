@@ -4,8 +4,9 @@ import java.util.List;
 
 import org.bukkit.command.CommandSender;
 
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.lang.Message;
-import ca.poutineqc.base.plugin.PPlugin;
+import ca.poutineqc.base.utils.Verify.VerifyException;
 
 /**
  * A Command is something that can be executed by players
@@ -24,7 +25,7 @@ public interface Command {
 		GENERAL, SETUP, ADMIN, PLAYER,
 	}
 
-	void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args);
+	void execute(PPlugin plugin, CommandSender commandSender, String cmdValue, String[] args) throws VerifyException;
 
 	void complete(PPlugin plugin, List<String> tabCompletion, String[] args);
 

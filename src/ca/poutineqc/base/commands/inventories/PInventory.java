@@ -6,9 +6,8 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.instantiable.PPlayer;
-import ca.poutineqc.base.lang.PMessages;
-import ca.poutineqc.base.plugin.PPlugin;
 
 public abstract class PInventory {
 	protected PPlugin plugin;
@@ -37,9 +36,7 @@ public abstract class PInventory {
 	}
 
 	protected String getFullTitle() {
-		return ChatColor.translateAlternateColorCodes('&',
-				pPlayer.getLanguage().get(PMessages.PREFIX).replace("%plugin%", plugin.getPrefix()) + " "
-						+ this.title);
+		return ChatColor.translateAlternateColorCodes('&', plugin.getPrefix() + " " + this.title);
 	}
 
 	protected void openInventory() {

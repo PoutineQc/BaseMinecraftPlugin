@@ -4,26 +4,19 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 import ca.poutineqc.base.instantiable.PPlayer;
-import ca.poutineqc.base.instantiable.Playable;
 
-public class PlayerLeaveGameEvent extends Event {
+public class PlayerLoadEvent extends Event {
 
 	private static final HandlerList HANDLERS = new HandlerList();
 	
 	private PPlayer player;
-	private Playable game;
-	
-	public PlayerLeaveGameEvent(PPlayer player, Playable game) {
+
+	public PlayerLoadEvent(PPlayer player) {
 		this.player = player;
-		this.game = game;
 	}
 	
 	public PPlayer getPlayer() {
 		return player;
-	}
-	
-	public Playable getGame() {
-		return game;
 	}
 
 	@Override

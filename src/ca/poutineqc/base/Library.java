@@ -1,6 +1,7 @@
-package ca.poutineqc.base.plugin;
+package ca.poutineqc.base;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -10,69 +11,51 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryAction;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import ca.poutineqc.base.commands.CommandListener;
 import ca.poutineqc.base.commands.CommandManager;
 import ca.poutineqc.base.commands.PCommand;
-import ca.poutineqc.base.commands.inventories.PInventory;
 import ca.poutineqc.base.datastorage.DataStorage;
 import ca.poutineqc.base.instantiable.PPlayer;
-import ca.poutineqc.base.instantiable.Playable;
-import ca.poutineqc.base.instantiable.PlayerFallback;
 import ca.poutineqc.base.instantiable.SavableManager;
 import ca.poutineqc.base.instantiable.SavableParameter;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.LanguagesManager;
 import ca.poutineqc.base.lang.Message;
 import ca.poutineqc.base.lang.PMessages;
+import ca.poutineqc.base.listeners.InventoryEvents;
 
-public final class Library extends JavaPlugin implements Listener, PPlugin {
+public final class Library extends JavaPlugin implements PPlugin {
 
 	private static final String[] BUILT_IN = new String[] { "en", "fr" };
 	private static Library plugin;
-
-	public static final String WORLD_EDIT_NAME = "WorldEdit";
-	static final String ESSENTIALS_NAME = "Essentials";
-	
-	private boolean essentialsEnabled = false;
 
 	private List<PPlugin> observers;
 	private LanguagesManager languages;
 	private CommandManager commands;
 	private SavableManager<PPlayer> players;
-	private PlayerFallback playerFallback;
 
 	@Override
 	public void onEnable() {
 		Library.plugin = this;
-		observers = new ArrayList<PPlugin>();
 		saveDefaultConfig();
 
+		observers = new ArrayList<PPlugin>();
 		this.languages = newLanguageManager();
 		this.commands = newCommandManager();
 		this.players = newPlayerManager();
-		this.playerFallback = new PlayerFallback(this);
-
-		essentialsEnabled = Bukkit.getPluginManager().isPluginEnabled(ESSENTIALS_NAME);
+		for (Player player : this.getServer().getOnlinePlayers())
+			players.loadIfSaved(player.getUniqueId());
 
 		registerEvents();
 	}
 
 	private void registerEvents() {
 		PluginManager pm = getServer().getPluginManager();
-		pm.registerEvents(this, this);
-		pm.registerEvents(playerFallback, this);
+		pm.registerEvents(new InventoryEvents(), this);
+		pm.registerEvents(new PlayerLoader(this), this);
 
 		CommandListener commandListener = new CommandListener(this);
 		PluginCommand command = getCommand("poulib");
@@ -89,44 +72,7 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 		plugin.observers.add(observer);
 
 		plugin.languages.append(observer.getLanguages());
-	}
-
-	@EventHandler(priority = EventPriority.HIGH)
-	public void onPlayerLoginEvent(PlayerJoinEvent event) {
-		players.loadIfSaved(event.getPlayer().getUniqueId());
-	}
-
-	@EventHandler(priority = EventPriority.LOW)
-	public void onPlayerDisconnectEvent(PlayerQuitEvent event) {
-		players.removeIfHandled(event.getPlayer().getUniqueId());
-	}
-
-	@EventHandler
-	public void onInventoryClose(InventoryCloseEvent event) {
-		if (!(event.getPlayer() instanceof Player))
-			return;
-
-		PPlayer pPlayer = getPPlayer((Player) event.getPlayer());
-		pPlayer.setCurrentInventory(null);
-	}
-
-	@EventHandler
-	public void onInventoryClick(InventoryClickEvent event) {
-		if (event.getAction() == InventoryAction.NOTHING || event.getAction() == InventoryAction.UNKNOWN)
-			return;
-
-		if (!(event.getWhoClicked() instanceof Player))
-			return;
-
-		ItemStack item = event.getCurrentItem();
-		PPlayer player = getPPlayer((Player) event.getWhoClicked());
-
-		PInventory inv = player.getCurrentInventory();
-		if (inv == null)
-			return;
-
-		event.setCancelled(true);
-		inv.update(item, event.getAction());
+		plugin.getLogger().info("Linked!");
 	}
 
 	public SavableManager<PPlayer> newPlayerManager() {
@@ -139,7 +85,7 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 
 			@Override
 			public SavableParameter getIdentification() {
-				return PPlayer.getIdentifications();
+				return PPlayer.getIdentification();
 			}
 
 			@Override
@@ -148,7 +94,7 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 			}
 
 			@Override
-			public PPlayer newInstance(DataStorage data, UUID uuid) {
+			public PPlayer newInstance(JavaPlugin javaPlugin, DataStorage data, UUID uuid) {
 				return new PPlayer(plugin, data, uuid);
 			}
 		};
@@ -175,11 +121,7 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 
 			@Override
 			public Collection<Message> getMessages() {
-				Collection<Message> messages = new ArrayList<Message>();
-				for (Message m : PMessages.values())
-					messages.add(m);
-
-				return messages;
+				return new ArrayList<Message>(Arrays.asList(PMessages.values()));
 			}
 		};
 	}
@@ -195,9 +137,6 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 		commands.addCommand(PCommand.HELP);
 		commands.addCommand(PCommand.LANGUAGE);
 		commands.addCommand(PCommand.RELOAD);
-
-		commands.addCommand(PCommand.JOIN);
-		commands.addCommand(PCommand.QUIT);
 
 		return commands;
 
@@ -239,28 +178,8 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 
 	@Override
 	public String getPrefix() {
-		return "PL";
-	}
-
-	@Override
-	public Playable getGameFromArenaName(String string) {
-		return null;
-	}
-
-	@Override
-	public void newArena(String string) {
-		// Does nothing
-	}
-
-	@Override
-	public void deleteArena(Playable game) {
-		// Does nothing
-		
-	}
-
-	@Override
-	public List<Playable> getGames() {
-		return new ArrayList<Playable>();
+		return getPrimaryColor() + "[" + getSecondaryColor() + this.getDescription().getPrefix() + getPrimaryColor()
+				+ "]";
 	}
 
 	public static PPlayer newPPlayer(Player player) {
@@ -287,15 +206,21 @@ public final class Library extends JavaPlugin implements Listener, PPlugin {
 	}
 
 	public static Language getLanguage(UUID uuid) {
-		return (plugin.players.isSaved(uuid)) ? plugin.players.get(uuid).getLanguage() : plugin.languages.getDefault();
+
+		try {
+			return (plugin.players.isSaved(uuid)) ? plugin.players.get(uuid).getLanguage()
+					: plugin.languages.getDefault();
+		} catch (NullPointerException e) {
+			return plugin.languages.getDefault();
+		}
 	}
 
 	public static LanguagesManager getLanguageManager() {
 		return plugin.languages;
 	}
 
-	public static boolean isEssentialsEnabled() {
-		return plugin.essentialsEnabled;
+	SavableManager<PPlayer> getPlayers() {
+		return players;
 	}
 
 }

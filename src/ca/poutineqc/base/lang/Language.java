@@ -10,11 +10,11 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import com.google.gson.JsonObject;
 
+import ca.poutineqc.base.Library;
+import ca.poutineqc.base.PConfigKey;
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.datastorage.UniversalSerializable;
 import ca.poutineqc.base.datastorage.YAML;
-import ca.poutineqc.base.plugin.Library;
-import ca.poutineqc.base.plugin.PConfigKey;
-import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Utils;
 
 public class Language extends HashMap<Message, String> implements UniversalSerializable {
@@ -64,7 +64,7 @@ public class Language extends HashMap<Message, String> implements UniversalSeria
 	public String get(Object key) {
 		if (!(key instanceof Message))
 			throw new IllegalArgumentException("The key must be a Message");
-			
+
 		Message message = (Message) key;
 		if (this.containsKey(message))
 			return super.get(message);
@@ -78,7 +78,7 @@ public class Language extends HashMap<Message, String> implements UniversalSeria
 
 	public void sendError(PPlugin plugin, CommandSender player, Message message) {
 		sendError(plugin, player, this.get(message));
-		
+
 	}
 
 	public void sendMessage(PPlugin plugin, CommandSender player, Message message) {
@@ -87,8 +87,7 @@ public class Language extends HashMap<Message, String> implements UniversalSeria
 
 	public void sendMessage(PPlugin plugin, CommandSender player, String message) {
 		if (prefixBeforeEveryMessage)
-			player.sendMessage(ChatColor.translateAlternateColorCodes('&',
-					get(PMessages.PREFIX).replace("%plugin%", plugin.getPrefix()) + " " + message));
+			player.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getPrefix() + " " + message));
 		else
 			player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
 	}
@@ -112,13 +111,13 @@ public class Language extends HashMap<Message, String> implements UniversalSeria
 
 	@Override
 	public int getMaxToStringLength() {
-		
+
 		return MAX_STRING_LENGTH;
 	}
 
 	public static String getKey(ConfigurationSection cs) {
 		return cs.getString(PRIMAL_KEY);
-		
+
 	}
 
 	@Override

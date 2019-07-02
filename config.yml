@@ -13,4 +13,4 @@ port: 3306
 user: ''
 password: ''
 database: 'minecraft'
-tablePrefix: 'poulib_'
+tablePrefix: 'jlib_'

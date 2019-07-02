@@ -8,11 +8,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import ca.poutineqc.base.Library;
+import ca.poutineqc.base.PPlugin;
 import ca.poutineqc.base.lang.Language;
 import ca.poutineqc.base.lang.PMessages;
-import ca.poutineqc.base.plugin.Library;
-import ca.poutineqc.base.plugin.PPlugin;
 import ca.poutineqc.base.utils.Utils;
+import ca.poutineqc.base.utils.Verify.VerifyException;
 
 public class CommandListener implements CommandExecutor, TabCompleter {
 
@@ -40,16 +41,21 @@ public class CommandListener implements CommandExecutor, TabCompleter {
 
 		Command crCommand = plugin.getCommandManager().getCommand(args[0]);
 		if (crCommand == null) {
-			local.sendMessage(plugin, sender, local.get(PMessages.ERROR_COMMAND).replace("%cmd%", cmdValue));
+			local.sendError(plugin, sender, local.get(PMessages.ERROR_COMMAND).replace("%cmd%", cmdValue));
 			return true;
 		}
 
 		if (!crCommand.hasPermission(plugin, sender)) {
-			local.sendMessage(plugin, sender, local.get(PMessages.COMMAND_NO_PERMISSION));
+			local.sendError(plugin, sender, local.get(PMessages.COMMAND_NO_PERMISSION));
 			return true;
 		}
 
-		crCommand.execute(plugin, sender, cmdValue, args);
+		try {
+			crCommand.execute(plugin, sender, cmdValue, args);
+		} catch (VerifyException e) {
+			local.sendError(plugin, sender, e.getMessage());
+		}
+		
 		return true;
 	}
 

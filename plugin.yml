@@ -1,13 +1,13 @@
-name: PouLib
-main: ca.poutineqc.base.plugin.Library
+name: JLib
+main: ca.poutineqc.base.Library
 version: 1.0
 description: Library and Player/Language Management
 load: STARTUP
 author: PoutineQc
-prefix: poulib
+prefix: JLib
 softdepend : [Essentials, WorldEdit]
 
 commands:
   poulib:
-    description: PouLib commands
+    description: JLib commands
     usage:  /<command>

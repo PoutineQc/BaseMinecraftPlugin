@@ -5,16 +5,16 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
-import ca.poutineqc.base.plugin.Library;
-import ca.poutineqc.base.plugin.PConfigKey;
-import ca.poutineqc.base.plugin.PPlugin;
+import ca.poutineqc.base.Library;
+import ca.poutineqc.base.PConfigKey;
+import ca.poutineqc.base.PPlugin;
 
 /**
  * A MySQL connection to a Database. Used to store data on it and read data from
  * it. Can be accessed locally or through the web with an IP address and a port.
  * The connection informations are stored on a config YAML file.
  * 
- * @author Sébastien Chagnon
+ * @author Sï¿½bastien Chagnon
  * @see Database
  * @see DataStorage
  * @see Connection
@@ -46,7 +46,7 @@ public class MySQL extends Database {
 
 		try {
 			Connection conn = DriverManager.getConnection(
-					"jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true", user, password);
+					"jdbc:mysql://" + host + ":" + port + "/" + database + "?autoReconnect=true&useSSL=false", user, password);
 			return conn;
 		} catch (SQLException ex) {
 			plugin.get().getLogger().log(Level.SEVERE, "MySQL exception on initialize", ex);

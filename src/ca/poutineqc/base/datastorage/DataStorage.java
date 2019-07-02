@@ -188,6 +188,7 @@ public interface DataStorage {
 	 * @see UUID
 	 */
 	void newInstance(SavableParameter identification, SUUID uuid, List<Pair<SavableParameter, StringSerializable>> createParameters);
+	void deleteInstance(SavableParameter identification, SUUID uuid);
 
 	/**
 	 * Returns all the data requested in the parameters parameter's List from
@@ -209,7 +210,7 @@ public interface DataStorage {
 	 * @see UUID
 	 */
 	Map<SavableParameter, String> getIndividualData(SavableParameter parameter, SUUID uuid,
-			SavableParameter[] datas);
+			List<SavableParameter> columns);
 
 
 	/**

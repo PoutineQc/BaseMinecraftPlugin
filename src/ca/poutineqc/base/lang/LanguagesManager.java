@@ -3,8 +3,8 @@ package ca.poutineqc.base.lang;
 import java.util.Collection;
 import java.util.HashMap;
 
-import ca.poutineqc.base.plugin.PConfigKey;
-import ca.poutineqc.base.plugin.PPlugin;
+import ca.poutineqc.base.PConfigKey;
+import ca.poutineqc.base.PPlugin;
 
 public abstract class LanguagesManager extends HashMap<String, Language> {
 
